@@ -93,6 +93,17 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 		return ans;
 	}
 
-	// todo implement the rest of this function
-	return NULL;
+	ll_node_t *node = list->head;
+	for (int i = 0; i < (int)n - 1; ++i) {
+		node = node->next;
+	}
+
+	ll_node_t *ans = node->next;
+	node->next = node->next ? node->next->next : NULL;
+
+	if (n == list->size - 1) {
+		list->tail = node;
+	}
+
+	return ans;
 }

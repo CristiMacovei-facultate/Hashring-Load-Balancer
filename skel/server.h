@@ -6,7 +6,9 @@
 #define SERVER_H
 
 #include "constants.h"
+#include "hashmap.h"
 #include "lru_cache.h"
+#include "queue.h"
 #include "utils.h"
 
 #define TASK_QUEUE_SIZE 1000
@@ -14,9 +16,11 @@
 #define MAX_RESPONSE_LENGTH 4096
 
 typedef struct server {
-	lru_cache *cache;
+	int id;
 
-	/* TODO: add needed fields */
+	hashmap_t *local_db;
+	lru_cache *cache;
+	queue_t *task_queue;
 } server;
 
 typedef struct request {
