@@ -3,3 +3,8 @@ check.sh
 cpplint.py
 in/
 ref/
+
+# generated
+tema2
+*.err
+out/
