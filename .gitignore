@@ -1,0 +1,5 @@
+# checker
+check.sh
+cpplint.py
+in/
+ref/
