@@ -3,18 +3,24 @@
  */
 
 #include "load_balancer.h"
+#include "arraylist.h"
 #include "server.h"
+#include "utils.h"
 
 load_balancer *init_load_balancer(bool enable_vnodes)
 {
-	/* TODO */
-	return NULL;
+	load_balancer *lb = malloc(sizeof(load_balancer));
+	lb->hash_function_docs = hash_string;
+	lb->hash_function_servers = hash_uint;
+	lb->servers = al_init(sizeof(server));
+	return lb;
 }
 
-void loader_add_server(load_balancer *main, int server_id, int cache_size)
+void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 {
-	/* TODO: Remove test_server after checking the server implementation */
-	// main->test_server = init_server(cache_size);
+	server *srv = malloc(sizeof(server));
+
+	al_insert(lb->servers, lb->servers->size, srv);
 }
 
 void loader_remove_server(load_balancer *main, int server_id)

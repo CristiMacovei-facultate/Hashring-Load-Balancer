@@ -30,20 +30,24 @@ void read_quoted_string(char *buffer, int buffer_len, int *start, int *end)
 	}
 }
 
-request_type read_request_arguments(FILE *input_file, char *buffer, int *maybe_server_id, int *maybe_cache_size,
-																		char **maybe_doc_name, char **maybe_doc_content)
+request_type read_request_arguments(FILE *input_file, char *buffer,
+																		int *maybe_server_id, int *maybe_cache_size,
+																		char **maybe_doc_name,
+																		char **maybe_doc_content)
 {
 	request_type req_type;
 	int word_start = -1;
 	int word_end = -1;
 
-	DIE(fgets(buffer, REQUEST_LENGTH + 1, input_file) == NULL, "insufficient requests");
+	DIE(fgets(buffer, REQUEST_LENGTH + 1, input_file) == NULL,
+			"insufficient requests");
 
 	req_type = get_request_type(buffer);
 
 	if (req_type == ADD_SERVER) {
 		*maybe_server_id = atoi(buffer + strlen(ADD_SERVER_REQUEST) + 1);
-		*maybe_cache_size = atoi(strchr(buffer + strlen(ADD_SERVER_REQUEST) + 1, ' '));
+		*maybe_cache_size =
+				atoi(strchr(buffer + strlen(ADD_SERVER_REQUEST) + 1, ' '));
 	}
 	else if (req_type == REMOVE_SERVER) {
 		*maybe_server_id = atoi(buffer + strlen(REMOVE_SERVER_REQUEST) + 1);
@@ -63,15 +67,18 @@ request_type read_request_arguments(FILE *input_file, char *buffer, int *maybe_s
 
 			/* Read the content, which might be a multiline quoted string */
 			word_start = -1;
-			read_quoted_string(tmp_buffer, DOC_CONTENT_LENGTH, &word_start, &word_end);
+			read_quoted_string(tmp_buffer, DOC_CONTENT_LENGTH, &word_start,
+												 &word_end);
 
 			if (word_end == -1)
 				strcpy(*maybe_doc_content, tmp_buffer + word_start + 1);
 			else
-				strncpy(*maybe_doc_content, tmp_buffer + word_start + 1, word_end - word_start - 1);
+				strncpy(*maybe_doc_content, tmp_buffer + word_start + 1,
+								word_end - word_start - 1);
 
 			while (word_end == -1) {
-				DIE(fgets(buffer, DOC_CONTENT_LENGTH + 1, input_file) == NULL, "document content is not properly quoted");
+				DIE(fgets(buffer, DOC_CONTENT_LENGTH + 1, input_file) == NULL,
+						"document content is not properly quoted");
 
 				read_quoted_string(buffer, DOC_CONTENT_LENGTH, &word_start, &word_end);
 				memcpy(*maybe_doc_content + strlen(*maybe_doc_content), buffer,
@@ -86,18 +93,23 @@ request_type read_request_arguments(FILE *input_file, char *buffer, int *maybe_s
 	return req_type;
 }
 
-void apply_requests(FILE *input_file, char *buffer, int requests_num, bool enable_vnodes)
+void apply_requests(FILE *input_file, char *buffer, int requests_num,
+										bool enable_vnodes)
 {
 	char *doc_name, *doc_content;
 	int server_id, cache_size;
 
 	load_balancer *main = init_load_balancer(enable_vnodes);
+	printf("[d] Am initializat panarama\n");
 
 	for (int i = 0; i < requests_num; i++) {
-		request_type req_type =
-				read_request_arguments(input_file, buffer, &server_id, &cache_size, &doc_name, &doc_content);
+		request_type req_type = read_request_arguments(
+				input_file, buffer, &server_id, &cache_size, &doc_name, &doc_content);
+
+		printf("[d] Request %d\n", i);
 
 		if (req_type == ADD_SERVER) {
+			printf("[d] Request de ADD\n");
 			DIE(cache_size < 0, "cache size must be positive");
 			loader_add_server(main, server_id, (unsigned int)cache_size);
 		}

@@ -7,13 +7,15 @@ CACHE=lru_cache
 UTILS=utils
 
 # Add new source file names here:
-# EXTRA=<extra source file name>
+AL=arraylist
+LL=linked_list
+Q=queue
 
 .PHONY: build clean
 
 build: tema2
 
-tema2: main.o $(LOAD).o $(SERVER).o $(CACHE).o $(UTILS).o # $(EXTRA).o
+tema2: main.o $(LOAD).o $(SERVER).o $(CACHE).o $(UTILS).o $(AL).o $(LL).o $(Q).o
 	$(CC) $^ -o $@
 
 main.o: main.c
@@ -31,8 +33,14 @@ $(CACHE).o: $(CACHE).c $(CACHE).h
 $(UTILS).o: $(UTILS).c $(UTILS).h
 	$(CC) $(CFLAGS) $^ -c
 
-# $(EXTRA).o: $(EXTRA).c $(EXTRA).h
-# 	$(CC) $(CFLAGS) $^ -c
+$(AL).o: $(AL).c $(AL).h
+	$(CC) $(CFLAGS) $^ -c
+
+$(LL).o: $(LL).c $(LL).h
+	$(CC) $(CFLAGS) $^ -c
+
+$(Q).o: $(Q).c $(Q).h
+	$(CC) $(CFLAGS) $^ -c
 
 clean:
 	rm -f *.o tema2 *.h.gch

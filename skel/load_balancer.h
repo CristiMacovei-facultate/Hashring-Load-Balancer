@@ -5,6 +5,7 @@
 #ifndef LOAD_BALANCER_H
 #define LOAD_BALANCER_H
 
+#include "arraylist.h"
 #include "server.h"
 
 #define MAX_SERVERS 99999
@@ -13,12 +14,7 @@ typedef struct load_balancer {
 	unsigned int (*hash_function_servers)(void *);
 	unsigned int (*hash_function_docs)(void *);
 
-	/* TODO: remove test_server after testing
-	 *       the functionality for a single server */
-	server *test_server;
-
-	/* TODO: add fields needed for a hashring with
-					 multiple servers */
+	arraylist_t *servers;
 } load_balancer;
 
 load_balancer *init_load_balancer(bool enable_vnodes);
