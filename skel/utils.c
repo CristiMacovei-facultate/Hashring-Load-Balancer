@@ -47,9 +47,11 @@ request_type get_request_type(char *request_type_str)
 {
 	request_type type;
 
-	if (!strncmp(request_type_str, ADD_SERVER_REQUEST, strlen(ADD_SERVER_REQUEST)))
+	if (!strncmp(request_type_str, ADD_SERVER_REQUEST,
+							 strlen(ADD_SERVER_REQUEST)))
 		type = ADD_SERVER;
-	else if (!strncmp(request_type_str, REMOVE_SERVER_REQUEST, strlen(REMOVE_SERVER_REQUEST)))
+	else if (!strncmp(request_type_str, REMOVE_SERVER_REQUEST,
+										strlen(REMOVE_SERVER_REQUEST)))
 		type = REMOVE_SERVER;
 	else if (!strncmp(request_type_str, EDIT_REQUEST, strlen(EDIT_REQUEST)))
 		type = EDIT_DOCUMENT;
@@ -60,3 +62,5 @@ request_type get_request_type(char *request_type_str)
 
 	return type;
 }
+
+int compare_string(void *s1, void *s2) { return strcmp(s1, s2); }
