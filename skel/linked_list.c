@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,6 +41,7 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 	ll_node_t *new_node = malloc(sizeof(ll_node_t));
 	new_node->next = NULL;
 	new_node->data = malloc(list->data_size);
+	// printf("newnode.data = %p\n", new_node->data);
 	memcpy(new_node->data, data, list->data_size);
 
 	request *debug = new_node->data;

@@ -100,16 +100,12 @@ void apply_requests(FILE *input_file, char *buffer, int requests_num,
 	int server_id, cache_size;
 
 	load_balancer *main = init_load_balancer(enable_vnodes);
-	printf("[d] Am initializat panarama\n");
 
 	for (int i = 0; i < requests_num; i++) {
 		request_type req_type = read_request_arguments(
 				input_file, buffer, &server_id, &cache_size, &doc_name, &doc_content);
 
-		printf("[d] Request %d\n", i);
-
 		if (req_type == ADD_SERVER) {
-			printf("[d] Request de ADD\n");
 			DIE(cache_size < 0, "cache size must be positive");
 			loader_add_server(main, server_id, (unsigned int)cache_size);
 		}

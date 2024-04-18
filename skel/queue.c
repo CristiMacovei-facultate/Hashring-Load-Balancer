@@ -30,6 +30,6 @@ void q_push(queue_t *q, void *data)
 	}
 
 	request *debug = data;
-	printf("Inserez %s\n", debug->doc_name);
+	// printf("Inserez %s\n", debug->doc_name);
 	ll_insert_nth(q->data, q->data->size, data);
 }

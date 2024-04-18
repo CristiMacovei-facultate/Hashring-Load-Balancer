@@ -32,8 +32,6 @@ void loader_remove_server(load_balancer *main, int server_id)
 
 response *loader_forward_request(load_balancer *main, request *req)
 {
-	printf("Forwarder\n");
-
 	if (main->servers->size == 0) {
 		printf("[d] N-am servere cplm\n");
 		return NULL;
@@ -49,20 +47,17 @@ response *loader_forward_request(load_balancer *main, request *req)
 
 	// hardcoded for now
 	server *srv = al_get(main->servers, 0);
-	printf("Respect kendama\n");
 	response *res = server_handle_request(srv, new_req);
-
-	// printf("gata serveru\n");
-	// request *debug = srv->task_queue->data->head->data;
-	// printf("Ajung aici 51212, %s\n", debug->doc_name);
 
 	return res;
 }
 
 void free_load_balancer(load_balancer **main)
 {
-	/* TODO: get rid of test_server after testing the server implementation */
-	// free_server(&(*main)->test_server);
+	for (int i = 0; i < (int)((*main)->servers->size); ++i) {
+		server *s = al_get((*main)->servers, i);
+		free_server(&s);
+	}
 	free(*main);
 
 	*main = NULL;
