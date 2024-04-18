@@ -22,7 +22,7 @@ lru_cache *init_lru_cache(unsigned int cache_capacity)
 
 	cache->cap = cache_capacity;
 
-	cache->dll = dll_init(sizeof(lru_dll_data));
+	cache->dll = dll_init(sizeof(char *));
 	cache->map = hm_init(cache_capacity, hash_string_pointer,
 											 compare_string_pointers, string_to_long_map_destructor);
 
@@ -47,27 +47,12 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 	dll_node_t **hm_response = hm_get(cache->map, key);
 	// printf("node = %p\n", node);
 	if (!hm_response) {
-		lru_dll_data *data = malloc(sizeof(lru_dll_data));
-		data->key = malloc(sizeof(char **));
-		memcpy(data->key, key, sizeof(char *));
-		data->val = malloc(sizeof(char **));
-		memcpy(data->val, value, sizeof(char *));
-		// printf("Scriu data.key = %p, data.val = %p\n", *(char **)data->key,
-		//  *(char **)data->val);
+		char **data = malloc(sizeof(char *));
+		memcpy(data, value, sizeof(char *));
 		dll_node_t *node = dll_insert_nth_node(cache->dll, 0, data);
-		// printf("Vad asta 1, node = %p\n", node);
 
 		size_t pointer = (size_t)node;
-		// printf("Node ptr = 0x%lx\n", pointer);
-
 		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
-
-		// size_t *check = hm_get(cache->map, key);
-		// printf("Fac proba la mapa: 0x%lx\n", *check);
-		// dll_node_t *check_node = (dll_node_t *)(*check);
-		// lru_dll_data *check_info = check_node->data;
-		// printf("Nodu are cheia %s, val %s\n", *(char **)check_info->key,
-		// 			 *(char **)check_info->val);
 
 		if (lru_cache_is_full(cache)) {
 			dll_node_t *removed = cache->dll->tail;
@@ -79,11 +64,9 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 	}
 
 	dll_node_t *node = *hm_response;
-	lru_dll_data *info = node->data;
-	info->val = malloc(cache->dll->data_size);
-	// printf("info.val = %p\n", info->val);
-	// printf("value = %p\n", value);
-	memcpy(info->val, value, sizeof(char *));
+	char **info = node->data;
+	info = malloc(cache->dll->data_size);
+	memcpy(info, value, sizeof(char *));
 
 	// dll_move_node_first(cache->dll, node);
 	dll_remove_node(cache->dll, node);
@@ -93,23 +76,15 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 
 void *lru_cache_get(lru_cache *cache, void *key)
 {
-	// printf("Caut AA cheia %s\n", *(char **)key);
 	dll_node_t **hm_response = hm_get(cache->map, key);
-	// printf("Aici crapi 1 %p\n", hm_response);
 	if (!hm_response) {
 		return NULL;
 	}
 
 	dll_node_t *node = *(dll_node_t **)hm_response;
-	// printf("Aici crapi 2 %p\n", node);
-	lru_dll_data *info = node->data;
+	char **info = node->data;
 
-	// printf("Scriu data.key = %p, data.val = %p\n", *(char **)info->key,
-	// 			 *(char **)info->val);
-	// printf("Info pe %p\ncheie pe %p\nval pe %p\n", info, info->key, info->val);
-	// printf("A gasit cheia %s, valoare %s\n", *(char **)info->key,
-	//  *(char **)info->val);
-	return info->val;
+	return info;
 }
 
 void lru_cache_remove(lru_cache *cache, void *key)

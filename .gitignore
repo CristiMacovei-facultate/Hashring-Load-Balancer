@@ -3,6 +3,7 @@ check.sh
 cpplint.py
 in/
 ref/
+checkstyle.txt
 
 # generated
 tema2
