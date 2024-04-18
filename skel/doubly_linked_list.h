@@ -14,9 +14,11 @@ typedef struct {
 
 	unsigned int size;
 	unsigned int data_size;
+
+	void (*destructor)(void *);
 } dll_t;
 
-dll_t *dll_init(unsigned int data_size);
+dll_t *dll_init(unsigned int data_size, void (*destructor)(void *));
 
 dll_node_t *dll_get_nth_node(dll_t *list, unsigned int n);
 

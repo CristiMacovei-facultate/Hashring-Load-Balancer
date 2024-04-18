@@ -4,13 +4,14 @@
 
 #include "doubly_linked_list.h"
 
-dll_t *dll_init(unsigned int data_size)
+dll_t *dll_init(unsigned int data_size, void (*destructor)(void *))
 {
 	dll_t *dll = malloc(sizeof(dll_t));
 	dll->data_size = data_size;
 	dll->size = 0;
 	dll->head = NULL;
 	dll->tail = NULL;
+	dll->destructor = destructor;
 	return dll;
 }
 
@@ -103,6 +104,8 @@ void dll_free(dll_t *list)
 {
 	for (dll_node_t *node = list->head; node;) {
 		dll_node_t *aux = node->next;
+
+		list->destructor(node->data);
 
 		free(node->data);
 		free(node);

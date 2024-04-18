@@ -78,9 +78,8 @@ void *hm_remove(hashmap_t *map, void *key)
 		map_info_t *info = node->data;
 		if (map->key_compare_func(info->key, key)) {
 			ll_node_t *removed = ll_remove_nth_node(map->buckets[hash], index);
-			void *data = removed->data;
 			free(removed);
-			return data;
+			return info;
 		}
 
 		++index;

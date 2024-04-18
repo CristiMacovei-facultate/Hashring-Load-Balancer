@@ -10,10 +10,18 @@
 #include "lru_cache.h"
 #include "utils.h"
 
-void string_to_long_map_destructor(map_info_t *info)
+void string_ptr_to_long_map_destructor(map_info_t *info)
 {
-	char *key = info->key;
+	char **key = info->key;
+	free(*key);
 	free(key);
+}
+
+void string_ptr_destructor(void *data)
+{
+	char *string_ptr = data;
+	// free(*string_ptr);
+	// free(string_ptr);
 }
 
 lru_cache *init_lru_cache(unsigned int cache_capacity)
@@ -22,9 +30,10 @@ lru_cache *init_lru_cache(unsigned int cache_capacity)
 
 	cache->cap = cache_capacity;
 
-	cache->dll = dll_init(sizeof(char *));
-	cache->map = hm_init(cache_capacity, hash_string_pointer,
-											 compare_string_pointers, string_to_long_map_destructor);
+	cache->dll = dll_init(sizeof(char *), string_ptr_destructor);
+	cache->map =
+			hm_init(cache_capacity, hash_string_pointer, compare_string_pointers,
+							string_ptr_to_long_map_destructor);
 
 	return cache;
 }
@@ -45,11 +54,11 @@ void free_lru_cache(lru_cache **cache)
 bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 {
 	dll_node_t **hm_response = hm_get(cache->map, key);
-	// printf("node = %p\n", node);
 	if (!hm_response) {
 		char **data = malloc(sizeof(char *));
 		memcpy(data, value, sizeof(char *));
 		dll_node_t *node = dll_insert_nth_node(cache->dll, 0, data);
+		free(data);
 
 		size_t pointer = (size_t)node;
 		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
