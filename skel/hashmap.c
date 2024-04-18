@@ -29,10 +29,16 @@ void *hm_get(hashmap_t *map, void *key)
 
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
-		if (map->key_compare_func(info->key, key)) {
+		printf("Caut %s, am gasit %s\n", *(char **)key, *(char **)info->key);
+		if (map->key_compare_func(info->key, key) == 0) {
 			return info->val;
 		}
+		else {
+			printf("Cum drq ba)))\n");
+		}
 	}
+
+	printf("Aici plescaie\n");
 
 	return NULL;
 }
@@ -40,11 +46,17 @@ void *hm_get(hashmap_t *map, void *key)
 void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 						unsigned int data_size)
 {
+	if (key_size == 8 && data_size == 8) {
+		printf("Scriu 0x%lx pe cheia %s\n", *(size_t *)data, *(char **)key);
+	}
 	unsigned int hash = map->hash_function_key(key) % map->hmax;
 	ll_t *list = map->buckets[hash];
 
 	void *copy_data = malloc(data_size);
 	memcpy(copy_data, data, data_size);
+	if (key_size == 8 && data_size == 8) {
+		printf("Scriu 0x%lx pe cheia %s\n", *(size_t *)copy_data, *(char **)key);
+	}
 
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
@@ -58,7 +70,16 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 	memcpy(copy_key, key, key_size);
 
 	map_info_t *new_info = malloc(sizeof(map_info_t));
+	new_info->key = copy_key;
+	new_info->val = copy_data;
 	ll_insert_nth(list, list->size, new_info);
+
+	if (key_size == 8 && data_size == 8) {
+		ll_node_t *check_tail = list->tail;
+		printf("Proba dupa ll insert: 0x%lx, %s\n",
+					 *(size_t *)(((map_info_t *)check_tail->data)->val),
+					 *(char **)(((map_info_t *)check_tail->data)->key));
+	}
 }
 
 void *hm_remove(hashmap_t *map, void *key)

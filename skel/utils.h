@@ -47,6 +47,10 @@ unsigned int hash_string(void *key);
 
 int compare_string(void *s1, void *s2);
 
+unsigned int hash_string_pointer(void *string_ptr);
+
+int compare_string_pointers(void *s1, void *s2);
+
 char *get_request_type_str(request_type req_type);
 request_type get_request_type(char *request_type_str);
 

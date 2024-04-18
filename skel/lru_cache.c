@@ -17,9 +17,10 @@ lru_cache *init_lru_cache(unsigned int cache_capacity)
 	cache->cap = cache_capacity;
 
 	cache->dll = dll_init(sizeof(lru_dll_data));
-	cache->map = hm_init(cache_capacity, hash_string, compare_string);
+	cache->map =
+			hm_init(cache_capacity, hash_string_pointer, compare_string_pointers);
 
-	return NULL;
+	return cache;
 }
 
 bool lru_cache_is_full(lru_cache *cache)
@@ -34,9 +35,21 @@ void free_lru_cache(lru_cache **cache)
 bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 {
 	dll_node_t *node = hm_get(cache->map, key);
+	printf("node = %p\n", node);
 	if (!node) {
-		node = dll_insert_nth_node(cache->dll, 0, value);
-		hm_set(cache->map, key, sizeof(char *), &node, sizeof(dll_node_t *));
+		lru_dll_data *data = malloc(sizeof(lru_dll_data));
+		data->key = key;
+		data->val = value;
+		node = dll_insert_nth_node(cache->dll, 0, data);
+		printf("Vad asta 1, node = %p\n", node);
+
+		size_t pointer = (size_t)node;
+		printf("Node ptr = 0x%lx\n", pointer);
+
+		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
+
+		size_t *check = hm_get(cache->map, key);
+		printf("Fac proba la mapa: 0x%lx\n", *check);
 
 		if (lru_cache_is_full(cache)) {
 			dll_node_t *removed = cache->dll->tail;
@@ -59,7 +72,15 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 
 void *lru_cache_get(lru_cache *cache, void *key)
 {
-	dll_node_t *node = hm_get(cache->map, key);
+	printf("Caut cheia %s\n", *(char **)key);
+	dll_node_t **hm_response = hm_get(cache->map, key);
+	printf("Aici crapi 1 %p\n", hm_response);
+	if (!hm_response) {
+		return NULL;
+	}
+
+	dll_node_t *node = *(dll_node_t **)hm_response;
+	printf("Aici crapi 2 %p\n", node);
 	lru_dll_data *info = node->data;
 	return info->val;
 }

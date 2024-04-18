@@ -6,6 +6,8 @@
 #include "arraylist.h"
 #include "server.h"
 #include "utils.h"
+#include <stdio.h>
+#include <sys/types.h>
 
 load_balancer *init_load_balancer(bool enable_vnodes)
 {
@@ -30,8 +32,31 @@ void loader_remove_server(load_balancer *main, int server_id)
 
 response *loader_forward_request(load_balancer *main, request *req)
 {
-	/* TODO */
-	return NULL;
+	printf("Forwarder\n");
+
+	if (main->servers->size == 0) {
+		printf("[d] N-am servere cplm\n");
+		return NULL;
+	}
+
+	char *copy_req_name = req->doc_name ? strdup(req->doc_name) : NULL;
+	char *copy_req_content = req->doc_content ? strdup(req->doc_content) : NULL;
+
+	request *new_req = malloc(sizeof(request));
+	new_req->type = req->type;
+	new_req->doc_content = copy_req_content;
+	new_req->doc_name = copy_req_name;
+
+	// hardcoded for now
+	server *srv = al_get(main->servers, 0);
+	printf("Respect kendama\n");
+	response *res = server_handle_request(srv, new_req);
+
+	// printf("gata serveru\n");
+	// request *debug = srv->task_queue->data->head->data;
+	// printf("Ajung aici 51212, %s\n", debug->doc_name);
+
+	return res;
 }
 
 void free_load_balancer(load_balancer **main)

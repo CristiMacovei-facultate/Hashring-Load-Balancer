@@ -64,3 +64,14 @@ request_type get_request_type(char *request_type_str)
 }
 
 int compare_string(void *s1, void *s2) { return strcmp(s1, s2); }
+
+unsigned int hash_string_pointer(void *string_ptr)
+{
+	return hash_string(*(char **)string_ptr);
+}
+
+int compare_string_pointers(void *s1, void *s2)
+{
+	// printf("Compar %s cu %s\n", *(char **)s1, *(char **)s2);
+	return compare_string(*(char **)s1, *(char **)s2);
+}

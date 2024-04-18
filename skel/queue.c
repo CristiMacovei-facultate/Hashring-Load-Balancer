@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "linked_list.h"
 #include "queue.h"
+#include "server.h"
 
 queue_t *q_init(unsigned int data_size)
 {
@@ -28,5 +29,7 @@ void q_push(queue_t *q, void *data)
 		exit(-1);
 	}
 
+	request *debug = data;
+	printf("Inserez %s\n", debug->doc_name);
 	ll_insert_nth(q->data, q->data->size, data);
 }

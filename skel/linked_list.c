@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "linked_list.h"
+#include "server.h"
 
 ll_t *ll_init(unsigned int data_size)
 {
@@ -41,6 +42,8 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 	new_node->data = malloc(list->data_size);
 	memcpy(new_node->data, data, list->data_size);
 
+	request *debug = new_node->data;
+
 	// if we insert on first pos
 	if (n == 0) {
 		new_node->next = list->head;
@@ -50,6 +53,8 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 			list->tail = new_node;
 		}
 		++(list->size);
+
+		debug = list->head->data;
 		return;
 	}
 
@@ -84,6 +89,8 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 
 	if (n == 0) {
 		ll_node_t *ans = list->head;
+		request *debug = ans->data;
+		// printf("Ajung aici pop, %s\n", debug->doc_name);
 		list->head = list->head->next;
 
 		if (list->size == 0) {

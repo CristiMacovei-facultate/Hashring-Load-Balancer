@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,7 +39,9 @@ void dll_insert_nth(dll_t *list, unsigned int n, dll_node_t *new_node)
 		new_node->next = list->head;
 		new_node->prev = NULL;
 
-		list->head->prev = new_node;
+		if (list->head) {
+			list->head->prev = new_node;
+		}
 		list->head = new_node;
 
 		if (list->size == 0) {
@@ -93,4 +96,5 @@ dll_node_t *dll_insert_nth_node(dll_t *list, unsigned int n, void *data)
 	new_node->data = malloc(list->data_size);
 	memcpy(new_node->data, data, list->data_size);
 	dll_insert_nth(list, n, new_node);
+	return new_node;
 }
