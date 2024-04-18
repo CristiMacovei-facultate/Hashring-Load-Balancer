@@ -2,8 +2,9 @@
 #include <string.h>
 
 #include "arraylist.h"
+#include "server.h"
 
-arraylist_t *al_init(unsigned int data_size)
+arraylist_t *al_init(unsigned int data_size, void (*destructor)(void *))
 {
 	arraylist_t *list = malloc(sizeof(arraylist_t));
 
@@ -11,6 +12,7 @@ arraylist_t *al_init(unsigned int data_size)
 	list->size = 0;
 	list->data_size = data_size;
 	list->data = malloc(sizeof(void *) * list->capacity);
+	list->destructor = destructor;
 
 	return list;
 }
@@ -60,4 +62,14 @@ void al_insert(arraylist_t *list, unsigned int index, void *data)
 	}
 	list->data[index] = new_data;
 	++(list->size);
+}
+
+void al_free(arraylist_t *list)
+{
+	for (int i = 0; i < list->size; ++i) {
+		server *s = al_get(list, i);
+		list->destructor(&s);
+	}
+	free(list->data);
+	free(list);
 }

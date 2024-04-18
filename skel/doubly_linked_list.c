@@ -98,3 +98,16 @@ dll_node_t *dll_insert_nth_node(dll_t *list, unsigned int n, void *data)
 	dll_insert_nth(list, n, new_node);
 	return new_node;
 }
+
+void dll_free(dll_t *list)
+{
+	for (dll_node_t *node = list->head; node;) {
+		dll_node_t *aux = node->next;
+
+		free(node->data);
+		free(node);
+
+		node = aux;
+	}
+	free(list);
+}

@@ -28,4 +28,6 @@ void dll_insert_nth(dll_t *list, unsigned int n, dll_node_t *node);
 
 void dll_remove_node(dll_t *list, dll_node_t *node);
 
+void dll_free(dll_t *list);
+
 #endif

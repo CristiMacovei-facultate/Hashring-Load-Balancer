@@ -21,4 +21,6 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data);
 
 ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n);
 
+void ll_free(ll_t *list);
+
 #endif

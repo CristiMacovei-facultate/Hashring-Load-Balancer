@@ -8,23 +8,22 @@
 #include "lru_cache.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "hashmap.h"
 #include "queue.h"
 #include "utils.h"
 
-static response *server_edit_document(server *s, char **ptr_doc_name,
-																			char **ptr_doc_content)
+static response *server_edit_document(server *s, char *doc_name,
+																			char *doc_content)
 {
-	char *doc_name = *ptr_doc_name;
-	char *doc_content = *ptr_doc_content;
-
 	response *res = malloc(sizeof(response));
 	res->server_log = malloc(100);
 	res->server_response = malloc(100);
 
 	// printf("[d] Am de editat %s\n", doc_name);
-	char **content_ptr = lru_cache_get(s->cache, ptr_doc_name);
+	char **content_ptr = lru_cache_get(s->cache, &doc_name);
 	bool cache_hit;
 	if (!content_ptr) {
 		cache_hit = false;
@@ -48,7 +47,10 @@ static response *server_edit_document(server *s, char **ptr_doc_name,
 	}
 
 	void *evicted_key;
-	lru_cache_put(s->cache, ptr_doc_name, ptr_doc_content, &evicted_key);
+	// printf("Dup name: %p, dup content: %p\n", dup_doc_name, dup_doc_content);
+	char *cache_dup_name = strdup(doc_name);
+	char *cache_dup_cont = strdup(doc_content);
+	lru_cache_put(s->cache, &cache_dup_name, &cache_dup_cont, &evicted_key);
 
 	return res;
 }
@@ -64,15 +66,12 @@ static response *server_get_document(server *s, char *doc_name)
 	// printf("Intoarce pointeru %p\n", content_ptr);
 	if (!content_ptr) {
 		// printf("Gherla cache\n");
-		// res->server_log = strcat("Cache MISS for ", doc_name);
 		sprintf(res->server_log, "Cache MISS for %s", doc_name);
 	}
 	else {
 		// printf("A gasit cache-ul\n");
-		// res->server_log = strcat("Cache HIT for ", doc_name);
 		sprintf(res->server_log, "Cache HIT for %s", doc_name);
 		res->server_id = s->id;
-		// res->server_response = *content_ptr;
 		sprintf(res->server_response, "%s", *content_ptr);
 		return res;
 	}
@@ -90,11 +89,20 @@ static response *server_get_document(server *s, char *doc_name)
 	return res;
 }
 
+void string_to_string_map_destructor(map_info_t *info)
+{
+	char *key = info->key;
+	char *val = info->val;
+	free(key);
+	free(val);
+}
+
 server *init_server(unsigned int cache_size)
 {
 	server *srv = malloc(sizeof(server));
 	srv->cache = init_lru_cache(cache_size);
-	srv->local_db = hm_init(100, hash_string, compare_string);
+	srv->local_db = hm_init(100, hash_string, compare_string,
+													string_to_string_map_destructor);
 	srv->task_queue = q_init(sizeof(request));
 
 	// printf("[d] Am ajuns aici\n");
@@ -106,7 +114,12 @@ response *server_handle_request(server *s, request *req)
 	// printf("[d] Mi-a dat mi-a dat pachet\n");
 	if (req->type == EDIT_DOCUMENT) {
 		// on edit request, put task in queue and go next
-		q_push(s->task_queue, req);
+		request *new_req = malloc(sizeof(request));
+		new_req->type = req->type;
+		new_req->doc_content = strdup(req->doc_content);
+		new_req->doc_name = strdup(req->doc_name);
+
+		q_push(s->task_queue, new_req);
 
 		printf("[Server %d]-Response: Request- EDIT %s - has been added to queue\n",
 					 s->id, req->doc_name);
@@ -122,23 +135,36 @@ response *server_handle_request(server *s, request *req)
 		// printf("Am scos din queue edit pe %s\n", queued_req->doc_name);
 
 		// queued_req should be an edit request
-		response *q_res = server_edit_document(s, &queued_req->doc_name,
-																					 &queued_req->doc_content);
+		response *q_res =
+				server_edit_document(s, queued_req->doc_name, queued_req->doc_content);
 
 		printf(GENERIC_MSG, s->id, q_res->server_response, s->id,
 					 q_res->server_log);
+		free(q_res->server_response);
+		free(q_res->server_log);
+		free(q_res);
+
+		free(queued_req->doc_content);
+		free(queued_req->doc_name);
+		free(queued_req);
 	}
 
 	// printf("\n\n\nAm terminat restantele, fac ce trebuie acuma\n");
 	response *res = server_get_document(s, req->doc_name);
 
 	printf(GENERIC_MSG, s->id, res->server_response, s->id, res->server_log);
+	free(res->server_response);
+	free(res->server_log);
+	free(res);
 
 	return NULL;
 }
 
 void free_server(server **s)
 {
+	free_lru_cache(&((*s)->cache));
+	q_free((*s)->task_queue);
+	hm_free((*s)->local_db);
 	free(*s);
 	*s = NULL;
 }

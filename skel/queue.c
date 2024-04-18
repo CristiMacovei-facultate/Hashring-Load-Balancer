@@ -33,3 +33,9 @@ void q_push(queue_t *q, void *data)
 	// printf("Inserez %s\n", debug->doc_name);
 	ll_insert_nth(q->data, q->data->size, data);
 }
+
+void q_free(queue_t *q)
+{
+	ll_free(q->data);
+	free(q);
+}

@@ -116,3 +116,16 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 
 	return ans;
 }
+
+void ll_free(ll_t *list)
+{
+	for (ll_node_t *node = list->head; node;) {
+		ll_node_t *aux = node->next;
+
+		free(node->data);
+		free(node);
+
+		node = aux;
+	}
+	free(list);
+}

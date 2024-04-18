@@ -6,13 +6,15 @@
 #include "linked_list.h"
 
 hashmap_t *hm_init(unsigned int hmax, unsigned int (*hash_function_key)(void *),
-									 int (*key_compare_func)(void *, void *))
+									 int (*key_compare_func)(void *, void *),
+									 void (*key_val_destructor)(map_info_t *))
 {
 	hashmap_t *hm = malloc(sizeof(hashmap_t));
 	hm->hmax = hmax;
 	hm->hash_function_key = hash_function_key;
 	hm->key_compare_func = key_compare_func;
 	hm->size = 0;
+	hm->key_val_destructor = key_val_destructor;
 
 	hm->buckets = malloc(hmax * sizeof(ll_t *));
 	for (int i = 0; i < hmax; ++i) {
@@ -76,11 +78,25 @@ void *hm_remove(hashmap_t *map, void *key)
 		map_info_t *info = node->data;
 		if (map->key_compare_func(info->key, key)) {
 			ll_node_t *removed = ll_remove_nth_node(map->buckets[hash], index);
-			return removed->data;
+			void *data = removed->data;
+			free(removed);
+			return data;
 		}
 
 		++index;
 	}
 
 	return NULL;
+}
+
+void hm_free(hashmap_t *map)
+{
+	for (int i = 0; i < map->hmax; ++i) {
+		for (ll_node_t *node = map->buckets[i]->head; node; node = node->next) {
+			map->key_val_destructor(node->data);
+		}
+		ll_free(map->buckets[i]);
+	}
+	free(map->buckets);
+	free(map);
 }
