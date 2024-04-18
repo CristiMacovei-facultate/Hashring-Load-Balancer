@@ -144,6 +144,9 @@ void *lru_cache_get(lru_cache *cache, void *key)
 	dll_node_t *node = *(dll_node_t **)hm_response;
 	lru_dll_data *info = node->data;
 
+	dll_remove_node(cache->dll, node);
+	dll_insert_nth(cache->dll, 0, node);
+
 	return info->val;
 }
 
