@@ -18,13 +18,13 @@ typedef struct {
 
 dll_t *dll_init(unsigned int data_size);
 
-dll_node_t *dll_get_nth_node(dll_t *list, unsigned int index);
+dll_node_t *dll_get_nth_node(dll_t *list, unsigned int n);
 
-dll_node_t *dll_insert_nth_node(dll_t *list, unsigned int index, void *data);
+dll_node_t *dll_insert_nth_node(dll_t *list, unsigned int n, void *data);
 
-dll_node_t *dll_remove_nth_node(dll_t *list, unsigned int index);
+dll_node_t *dll_remove_nth_node(dll_t *list, unsigned int n);
 
-void dll_insert_nth(dll_t *list, unsigned int index, dll_node_t *node);
+void dll_insert_nth(dll_t *list, unsigned int n, dll_node_t *node);
 
 void dll_remove_node(dll_t *list, dll_node_t *node);
 

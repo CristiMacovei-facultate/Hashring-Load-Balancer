@@ -20,7 +20,7 @@ ll_node_t *ll_get_nth_node(ll_t *list, unsigned int n)
 	}
 
 	ll_node_t *node = list->head;
-	for (int i = 0; i < (int)n; ++i) {
+	for (int i = 0; i < (int)n && node; ++i) {
 		node = node->next;
 	}
 	return node;

@@ -18,7 +18,8 @@ load_balancer *init_load_balancer(bool enable_vnodes)
 
 void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 {
-	server *srv = malloc(sizeof(server));
+	server *srv = init_server(cache_size);
+	srv->id = server_id;
 
 	al_insert(lb->servers, lb->servers->size, srv);
 }

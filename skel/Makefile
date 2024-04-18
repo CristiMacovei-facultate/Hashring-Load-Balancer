@@ -10,12 +10,14 @@ UTILS=utils
 AL=arraylist
 LL=linked_list
 Q=queue
+HM=hashmap
+DLL=doubly_linked_list
 
 .PHONY: build clean
 
 build: tema2
 
-tema2: main.o $(LOAD).o $(SERVER).o $(CACHE).o $(UTILS).o $(AL).o $(LL).o $(Q).o
+tema2: main.o $(LOAD).o $(SERVER).o $(CACHE).o $(UTILS).o $(AL).o $(LL).o $(Q).o $(HM).o $(DLL).o
 	$(CC) $^ -o $@
 
 main.o: main.c
@@ -41,6 +43,12 @@ $(LL).o: $(LL).c $(LL).h
 
 $(Q).o: $(Q).c $(Q).h
 	$(CC) $(CFLAGS) $^ -c
+
+$(HM).o: $(HM).c $(HM).h
+	$(CC) $(FLAGS) $^ -c
+
+$(DLL).o: $(DLL).c $(DLL).h
+	$(CC) $(FLAGS) $^ -c
 
 clean:
 	rm -f *.o tema2 *.h.gch
