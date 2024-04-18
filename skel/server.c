@@ -34,6 +34,9 @@ static response *server_edit_document(server *s, char *doc_name,
 	}
 
 	void *content = hm_get(s->local_db, doc_name);
+	if (content) {
+		free(content);
+	}
 	hm_set(s->local_db, doc_name, 1 + strlen(doc_name), doc_content,
 				 1 + strlen(doc_content));
 
@@ -73,7 +76,6 @@ static response *server_get_document(server *s, char *doc_name)
 	res->server_response = malloc(100);
 
 	char **content_ptr = lru_cache_get(s->cache, &doc_name);
-	// printf("Intoarce pointeru %p\n", content_ptr);
 	if (content_ptr) {
 		// printf("A gasit cache-ul\n");
 		sprintf(res->server_log, "Cache HIT for %s", doc_name);
@@ -130,6 +132,32 @@ server *init_server(unsigned int cache_size)
 	return srv;
 }
 
+void solve_queue(server *s, bool free_only)
+{
+	while (s->task_queue->data->size > 0) {
+		ll_node_t *req_node = q_pop(s->task_queue);
+		request *queued_req = req_node->data;
+
+		// queued_req should be an edit request
+		if (!free_only) {
+			response *q_res = server_edit_document(s, queued_req->doc_name,
+																						 queued_req->doc_content);
+
+			printf(GENERIC_MSG, s->id, q_res->server_response, s->id,
+						 q_res->server_log);
+			free(q_res->server_response);
+			free(q_res->server_log);
+			free(q_res);
+		}
+
+		free(queued_req->doc_content);
+		free(queued_req->doc_name);
+		free(queued_req);
+
+		free(req_node);
+	}
+}
+
 response *server_handle_request(server *s, request *req)
 {
 	// printf("[d] Mi-a dat mi-a dat pachet\n");
@@ -151,26 +179,7 @@ response *server_handle_request(server *s, request *req)
 		return NULL;
 	}
 
-	while (s->task_queue->data->size > 0) {
-		ll_node_t *req_node = q_pop(s->task_queue);
-		request *queued_req = req_node->data;
-
-		// queued_req should be an edit request
-		response *q_res =
-				server_edit_document(s, queued_req->doc_name, queued_req->doc_content);
-
-		printf(GENERIC_MSG, s->id, q_res->server_response, s->id,
-					 q_res->server_log);
-		free(q_res->server_response);
-		free(q_res->server_log);
-		free(q_res);
-
-		free(queued_req->doc_content);
-		free(queued_req->doc_name);
-		free(queued_req);
-
-		free(req_node);
-	}
+	solve_queue(s, false);
 
 	// printf("\n\n\nAm terminat restantele, fac ce trebuie acuma\n");
 	response *res = server_get_document(s, req->doc_name);
@@ -185,6 +194,8 @@ response *server_handle_request(server *s, request *req)
 
 void free_server(server **s)
 {
+	solve_queue(*s, true);
+
 	free_lru_cache(&((*s)->cache));
 	q_free((*s)->task_queue);
 	hm_free((*s)->local_db);

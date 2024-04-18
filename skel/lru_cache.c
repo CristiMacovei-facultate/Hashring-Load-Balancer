@@ -7,6 +7,7 @@
 
 #include "doubly_linked_list.h"
 #include "hashmap.h"
+#include "linked_list.h"
 #include "lru_cache.h"
 #include "utils.h"
 
@@ -61,6 +62,20 @@ void free_lru_cache(lru_cache **cache)
 	dll_free((*cache)->dll);
 	free(*cache);
 	*cache = NULL;
+}
+
+void print_map(lru_cache *cache)
+{
+	printf("\n\n\n");
+	for (int i = 0; i < cache->map->hmax; ++i) {
+		for (ll_node_t *node = cache->map->buckets[i]->head; node;
+				 node = node->next) {
+			map_info_t *info = node->data;
+			printf("key: %s, val: 0x%lx\n", *(char **)info->key,
+						 *(size_t *)info->val);
+		}
+	}
+	printf("\n\n\n");
 }
 
 bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)

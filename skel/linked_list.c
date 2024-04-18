@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hashmap.h"
 #include "linked_list.h"
 
 ll_t *ll_init(unsigned int data_size)
@@ -115,6 +116,8 @@ void ll_free(ll_t *list)
 {
 	for (ll_node_t *node = list->head; node;) {
 		ll_node_t *aux = node->next;
+
+		map_info_t *info = node->data;
 
 		free(node->data);
 		free(node);

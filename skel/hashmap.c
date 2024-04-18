@@ -31,13 +31,10 @@ void *hm_get(hashmap_t *map, void *key)
 
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
-		// printf("Caut %s, am gasit %s\n", *(char **)key, *(char **)info->key);
 		if (map->key_compare_func(info->key, key) == 0) {
 			return info->val;
 		}
 	}
-
-	// printf("Aici plescaie\n");
 
 	return NULL;
 }
@@ -53,7 +50,7 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
-		if (map->key_compare_func(info->key, key)) {
+		if (map->key_compare_func(info->key, key) == 0) {
 			info->val = copy_data;
 			return;
 		}
