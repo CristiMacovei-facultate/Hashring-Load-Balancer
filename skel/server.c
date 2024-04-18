@@ -52,10 +52,10 @@ static response *server_edit_document(server *s, char *doc_name,
 
 	if (!cache_hit) {
 		if (evicted_key) {
-			char *actual_evicted = *(char **)evicted_key;
 			sprintf(res->server_log,
 							"Cache MISS for %s - cache entry for %s has been evicted",
-							doc_name, actual_evicted);
+							doc_name, (char *)evicted_key);
+			free(evicted_key);
 		}
 		else {
 			sprintf(res->server_log, "Cache MISS for %s", doc_name);
@@ -93,10 +93,11 @@ static response *server_get_document(server *s, char *doc_name)
 		lru_cache_put(s->cache, &cache_dup_name, &cache_dup_cont, &evicted_key);
 
 		if (evicted_key) {
-			char *actual_evicted = *(char **)evicted_key;
 			sprintf(res->server_log,
 							"Cache MISS for %s - cache entry for %s has been evicted",
-							doc_name, actual_evicted);
+							doc_name, (char *)evicted_key);
+
+			free(evicted_key);
 		}
 		else {
 			sprintf(res->server_log, "Cache MISS for %s", doc_name);

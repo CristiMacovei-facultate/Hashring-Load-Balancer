@@ -71,9 +71,18 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 	if (!hm_response) {
 		if (lru_cache_is_full(cache)) {
 			dll_node_t *removed = cache->dll->tail;
-			*evicted_key = ((lru_dll_data *)removed->data)->key;
+			lru_dll_data *rm_data = removed->data;
 
-			lru_cache_remove(cache, *evicted_key);
+			char *ev_key_string = *(char **)(((lru_dll_data *)removed->data)->key);
+			char *copy_ev_key = strdup(ev_key_string);
+
+			*evicted_key = copy_ev_key;
+
+			lru_cache_remove(cache, ((lru_dll_data *)removed->data)->key);
+			cache->dll->destructor(rm_data);
+
+			free(rm_data);
+			free(removed);
 		}
 
 		lru_dll_data *node_data = malloc(sizeof(lru_dll_data));
@@ -135,4 +144,5 @@ void lru_cache_remove(lru_cache *cache, void *key)
 	}
 
 	cache->map->key_val_destructor(info);
+	free(info);
 }
