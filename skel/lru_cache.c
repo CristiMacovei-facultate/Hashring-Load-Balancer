@@ -15,13 +15,15 @@ void string_ptr_to_long_map_destructor(map_info_t *info)
 	char **key = info->key;
 	free(*key);
 	free(key);
+
+	size_t *val = info->val;
+	free(val);
 }
 
 void string_ptr_destructor(void *data)
 {
-	char *string_ptr = data;
-	// free(*string_ptr);
-	// free(string_ptr);
+	char **string_ptr = data;
+	free(*string_ptr);
 }
 
 lru_cache *init_lru_cache(unsigned int cache_capacity)
@@ -55,10 +57,7 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 {
 	dll_node_t **hm_response = hm_get(cache->map, key);
 	if (!hm_response) {
-		char **data = malloc(sizeof(char *));
-		memcpy(data, value, sizeof(char *));
-		dll_node_t *node = dll_insert_nth_node(cache->dll, 0, data);
-		free(data);
+		dll_node_t *node = dll_insert_nth_node(cache->dll, 0, value);
 
 		size_t pointer = (size_t)node;
 		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
@@ -72,12 +71,18 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 		return false;
 	}
 
-	dll_node_t *node = *hm_response;
-	char **info = node->data;
-	info = malloc(cache->dll->data_size);
-	memcpy(info, value, sizeof(char *));
+	char **key_ptr = key;
+	free(*key_ptr);
 
-	// dll_move_node_first(cache->dll, node);
+	dll_node_t *node = *hm_response;
+
+	// delete old value before changing to the new one
+	cache->dll->destructor(node->data);
+	free(node->data);
+
+	node->data = malloc(cache->dll->data_size);
+	memcpy(node->data, value, sizeof(char *));
+
 	dll_remove_node(cache->dll, node);
 	dll_insert_nth(cache->dll, 0, node);
 	return true;
@@ -98,9 +103,14 @@ void *lru_cache_get(lru_cache *cache, void *key)
 
 void lru_cache_remove(lru_cache *cache, void *key)
 {
-	dll_node_t *node = hm_remove(cache->map, key);
+	map_info_t *info = hm_remove(cache->map, key);
+
+	char *key_string = info->key;
+	dll_node_t *node = *(dll_node_t **)info->val;
 
 	if (node) {
 		dll_remove_node(cache->dll, node);
 	}
+
+	cache->map->key_val_destructor(info);
 }

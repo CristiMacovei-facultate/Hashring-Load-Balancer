@@ -19,7 +19,7 @@ typedef struct lru_cache {
 	// data will be lru_dll_data*
 	dll_t *dll;
 
-	// string --> ptr<dll_node_t>
+	// ptr<string> --> ptr<dll_node_t>
 	hashmap_t *map;
 
 	unsigned int cap;

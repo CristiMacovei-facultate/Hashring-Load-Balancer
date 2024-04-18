@@ -5,6 +5,7 @@
 #include "server.h"
 #include "constants.h"
 #include "hashmap.h"
+#include "linked_list.h"
 #include "lru_cache.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -105,7 +106,6 @@ server *init_server(unsigned int cache_size)
 													string_to_string_map_destructor);
 	srv->task_queue = q_init(sizeof(request));
 
-	// printf("[d] Am ajuns aici\n");
 	return srv;
 }
 
@@ -120,6 +120,7 @@ response *server_handle_request(server *s, request *req)
 		new_req->doc_name = strdup(req->doc_name);
 
 		q_push(s->task_queue, new_req);
+		free(new_req);
 
 		printf("[Server %d]-Response: Request- EDIT %s - has been added to queue\n",
 					 s->id, req->doc_name);
@@ -129,10 +130,9 @@ response *server_handle_request(server *s, request *req)
 		return NULL;
 	}
 
-	// printf("[d] E de-ala grav\n");
 	while (s->task_queue->data->size > 0) {
-		request *queued_req = q_pop(s->task_queue)->data;
-		// printf("Am scos din queue edit pe %s\n", queued_req->doc_name);
+		ll_node_t *req_node = q_pop(s->task_queue);
+		request *queued_req = req_node->data;
 
 		// queued_req should be an edit request
 		response *q_res =
@@ -147,6 +147,8 @@ response *server_handle_request(server *s, request *req)
 		free(queued_req->doc_content);
 		free(queued_req->doc_name);
 		free(queued_req);
+
+		free(req_node);
 	}
 
 	// printf("\n\n\nAm terminat restantele, fac ce trebuie acuma\n");

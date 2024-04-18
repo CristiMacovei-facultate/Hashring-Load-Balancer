@@ -9,7 +9,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-void lb_free_server(void *s) { free_server((server **)(s)); }
+void lb_free_server(void *s)
+{
+	server *serv_ptr = s;
+	free_server(&serv_ptr);
+}
 
 load_balancer *init_load_balancer(bool enable_vnodes)
 {
@@ -26,6 +30,7 @@ void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 	srv->id = server_id;
 
 	al_insert(lb->servers, lb->servers->size, srv);
+	free(srv);
 }
 
 void loader_remove_server(load_balancer *main, int server_id)
@@ -39,15 +44,6 @@ response *loader_forward_request(load_balancer *main, request *req)
 		return NULL;
 	}
 
-	// char *copy_req_name = req->doc_name ? strdup(req->doc_name) : NULL;
-	// char *copy_req_content = req->doc_content ? strdup(req->doc_content) :
-	// NULL;
-
-	// request *new_req = malloc(sizeof(request));
-	// new_req->type = req->type;
-	// new_req->doc_content = copy_req_content;
-	// new_req->doc_name = copy_req_name;
-
 	// hardcoded for now
 	server *srv = al_get(main->servers, 0);
 	response *res = server_handle_request(srv, req);
@@ -58,12 +54,7 @@ response *loader_forward_request(load_balancer *main, request *req)
 void free_load_balancer(load_balancer **main)
 {
 	al_free((*main)->servers);
-	// for (int i = 0; i < (int)((*main)->servers->size); ++i) {
-	// 	server *s = al_get((*main)->servers, i);
-	// 	printf("dau free aici\n");
-	// 	free_server(&s);
-	// }
-	free(*main);
 
+	free(*main);
 	*main = NULL;
 }

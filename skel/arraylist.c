@@ -68,7 +68,7 @@ void al_free(arraylist_t *list)
 {
 	for (int i = 0; i < list->size; ++i) {
 		server *s = al_get(list, i);
-		list->destructor(&s);
+		list->destructor(s);
 	}
 	free(list->data);
 	free(list);

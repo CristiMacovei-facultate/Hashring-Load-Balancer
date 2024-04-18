@@ -66,8 +66,13 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 	new_info->key = copy_key;
 	new_info->val = copy_data;
 	ll_insert_nth(list, list->size, new_info);
+	free(new_info);
 }
 
+/*
+function to remove a key-value pair from the hashmap
+returns the pair as a pointer of map_info_t, which should be freed by the caller
+*/
 void *hm_remove(hashmap_t *map, void *key)
 {
 	unsigned int hash = map->hash_function_key(key) % map->hmax;
