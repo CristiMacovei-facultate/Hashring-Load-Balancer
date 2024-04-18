@@ -11,8 +11,8 @@
 #include "hashmap.h"
 
 typedef struct {
-	char *key;
-	char *val;
+	char **key;
+	char **val;
 } lru_dll_data;
 
 typedef struct lru_cache {

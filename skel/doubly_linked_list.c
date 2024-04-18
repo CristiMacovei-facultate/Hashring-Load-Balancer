@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "doubly_linked_list.h"
+#include "lru_cache.h"
 
 dll_t *dll_init(unsigned int data_size, void (*destructor)(void *))
 {
@@ -89,6 +90,8 @@ void dll_remove_node(dll_t *list, dll_node_t *node)
 	else {
 		list->tail = prev;
 	}
+
+	--(list->size);
 }
 
 dll_node_t *dll_insert_nth_node(dll_t *list, unsigned int n, void *data)

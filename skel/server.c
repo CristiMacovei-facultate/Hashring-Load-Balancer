@@ -23,12 +23,10 @@ static response *server_edit_document(server *s, char *doc_name,
 	res->server_log = malloc(100);
 	res->server_response = malloc(100);
 
-	// printf("[d] Am de editat %s\n", doc_name);
 	char **content_ptr = lru_cache_get(s->cache, &doc_name);
 	bool cache_hit;
 	if (!content_ptr) {
 		cache_hit = false;
-		sprintf(res->server_log, "Cache MISS for %s", doc_name);
 	}
 	else {
 		cache_hit = true;
@@ -40,11 +38,10 @@ static response *server_edit_document(server *s, char *doc_name,
 				 1 + strlen(doc_content));
 
 	if (cache_hit || content) {
-		sprintf(res->server_response, "Document %s has been overridden\n",
-						doc_name);
+		sprintf(res->server_response, "Document %s has been overridden", doc_name);
 	}
 	else {
-		sprintf(res->server_response, "Document %s has been created\n", doc_name);
+		sprintf(res->server_response, "Document %s has been created", doc_name);
 	}
 
 	void *evicted_key;
@@ -52,6 +49,18 @@ static response *server_edit_document(server *s, char *doc_name,
 	char *cache_dup_name = strdup(doc_name);
 	char *cache_dup_cont = strdup(doc_content);
 	lru_cache_put(s->cache, &cache_dup_name, &cache_dup_cont, &evicted_key);
+
+	if (!cache_hit) {
+		if (evicted_key) {
+			char *actual_evicted = *(char **)evicted_key;
+			sprintf(res->server_log,
+							"Cache MISS for %s - cache entry for %s has been evicted",
+							doc_name, actual_evicted);
+		}
+		else {
+			sprintf(res->server_log, "Cache MISS for %s", doc_name);
+		}
+	}
 
 	return res;
 }
@@ -65,11 +74,7 @@ static response *server_get_document(server *s, char *doc_name)
 
 	char **content_ptr = lru_cache_get(s->cache, &doc_name);
 	// printf("Intoarce pointeru %p\n", content_ptr);
-	if (!content_ptr) {
-		// printf("Gherla cache\n");
-		sprintf(res->server_log, "Cache MISS for %s", doc_name);
-	}
-	else {
+	if (content_ptr) {
 		// printf("A gasit cache-ul\n");
 		sprintf(res->server_log, "Cache HIT for %s", doc_name);
 		res->server_id = s->id;
@@ -80,7 +85,22 @@ static response *server_get_document(server *s, char *doc_name)
 	char *local_response = hm_get(s->local_db, doc_name);
 	if (local_response) {
 		// res->server_response = local_response;
-		sprintf(res->server_response, "%s", doc_name);
+		sprintf(res->server_response, "%s", local_response);
+
+		void *evicted_key;
+		char *cache_dup_name = strdup(doc_name);
+		char *cache_dup_cont = strdup(local_response);
+		lru_cache_put(s->cache, &cache_dup_name, &cache_dup_cont, &evicted_key);
+
+		if (evicted_key) {
+			char *actual_evicted = *(char **)evicted_key;
+			sprintf(res->server_log,
+							"Cache MISS for %s - cache entry for %s has been evicted",
+							doc_name, actual_evicted);
+		}
+		else {
+			sprintf(res->server_log, "Cache MISS for %s", doc_name);
+		}
 	}
 	else {
 		// res->server_response = strcat("Document", doc_name);
