@@ -28,8 +28,12 @@ ll_node_t *ll_get_nth_node(ll_t *list, unsigned int n)
 	return node;
 }
 
-void ll_insert_nth(ll_t *list, unsigned int n, void *data)
+void ll_insert_nth(ll_t *list, unsigned int n, void *data, int debug_info)
 {
+	// if (debug_info) {
+	// 	if ((size_t)(((map_info_t *)data)->key) == 0x4bdc480)
+	// 		fprintf(stderr, "incerci macar?\n");
+	// }
 	if (!list) {
 		return;
 	}
@@ -59,7 +63,18 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 
 	// if we insert on last pos
 	if (n == list->size) {
-		list->tail->next = new_node;
+		// if (debug_info == 1 && (size_t)(((map_info_t *)data)->key) == 0x4bdc480)
+		// { 	map_info_t *info = data; 	if (strcmp(*(char **)(info->key),
+		// "other_outside.txt") == 0) { 		fprintf(stderr, "Uite-l pe nemernic\n");
+		// 	}
+		// 	fprintf(stderr, "uite aici\n");
+		// }
+		if (list->tail) {
+			// if (debug_info == 1 && (size_t)(((map_info_t *)data)->key) ==
+			// 0x4bdc480) { 	fprintf(stderr, "Adresa tail: %p\n", list->tail);
+			// }
+			list->tail->next = new_node;
+		}
 		list->tail = new_node;
 		++(list->size);
 		return;
@@ -87,13 +102,19 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 	}
 
 	if (n == 0) {
+		// if ((size_t)list->tail == 0x4d90be0) {
+		// 	for (ll_node_t *node = list->head; node; node = node->next) {
+		// 		fprintf(stderr, "node = %p\n", node);
+		// 	}
+		// 	fprintf(stderr, "Aici se intampla amuzanta\n");
+		// }
+		--(list->size);
 		ll_node_t *ans = list->head;
 		list->head = list->head->next;
 
 		if (list->size == 0) {
 			list->tail = NULL;
 		}
-		--(list->size);
 		return ans;
 	}
 
@@ -107,8 +128,11 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 
 	if (n == list->size - 1) {
 		list->tail = node;
+		// if ((size_t)list->tail == 0x4d90be0) {
+		// 	fprintf(stderr, "MUIE tail pe %p, ans pe %p\n", list->tail, ans);
+		// }
 	}
-
+	--(list->size);
 	return ans;
 }
 
@@ -116,8 +140,6 @@ void ll_free(ll_t *list)
 {
 	for (ll_node_t *node = list->head; node;) {
 		ll_node_t *aux = node->next;
-
-		map_info_t *info = node->data;
 
 		free(node->data);
 		free(node);

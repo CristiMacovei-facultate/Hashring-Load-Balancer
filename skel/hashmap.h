@@ -25,7 +25,7 @@ hashmap_t *hm_init(unsigned int hmax, unsigned int (*hash_function_key)(void *),
 void *hm_get(hashmap_t *map, void *key);
 
 void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
-						unsigned int data_size);
+						unsigned int data_size, int debug_info);
 
 void *hm_remove(hashmap_t *map, void *key);
 

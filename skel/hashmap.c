@@ -40,7 +40,7 @@ void *hm_get(hashmap_t *map, void *key)
 }
 
 void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
-						unsigned int data_size)
+						unsigned int data_size, int debug_info)
 {
 	unsigned int hash = map->hash_function_key(key) % map->hmax;
 	ll_t *list = map->buckets[hash];
@@ -56,13 +56,37 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 		}
 	}
 
+	// if (debug_info) {
+	// 	if (strcmp(*(char **)key, "other_outside.txt") == 0) {
+	// 		fprintf(stderr, "Adaug ca nod nou i guess? (%d)\n", list->size);
+	// 	}
+	// }
+
 	void *copy_key = malloc(key_size);
 	memcpy(copy_key, key, key_size);
 
 	map_info_t *new_info = malloc(sizeof(map_info_t));
 	new_info->key = copy_key;
 	new_info->val = copy_data;
-	ll_insert_nth(list, list->size, new_info);
+	// if (debug_info) {
+	// 	if (strcmp(*(char **)key, "other_outside.txt") == 0) {
+	// 		fprintf(stderr, "ia joaca (%s)\n", *(char **)key);
+	// 		fprintf(stderr, "ia joaca %p (%s)\n", new_info->key,
+	// 						*(char **)(new_info->key));
+	// 	}
+	// }
+	ll_insert_nth(list, list->size, new_info, 1);
+	// if (debug_info) {
+	// 	if (strcmp(*(char **)key, "other_outside.txt") == 0) {
+	// 		for (ll_node_t *node = list->head; node; node = node->next) {
+	// 			map_info_t *info = node->data;
+	// 			if (strcmp(*(char **)info->key, "other_outside.txt") == 0) {
+	// 				fprintf(stderr, "Uite-l coaie\n");
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+	// }
 	free(new_info);
 }
 
@@ -80,7 +104,11 @@ void *hm_remove(hashmap_t *map, void *key)
 		map_info_t *info = node->data;
 		if (map->key_compare_func(info->key, key) == 0) {
 			--(map->size);
+			// fprintf(stderr, "Dau afara %s, index %d / %d\n", *(char **)key, index,
+			// 				list->size);
 			ll_node_t *removed = ll_remove_nth_node(map->buckets[hash], index);
+			// fprintf(stderr, "Pusca %p, tail pe %p\n", removed,
+			// 				map->buckets[hash]->tail);
 			free(removed);
 			return info;
 		}

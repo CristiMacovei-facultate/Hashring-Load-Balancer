@@ -20,8 +20,8 @@ static response *server_edit_document(server *s, char *doc_name,
 																			char *doc_content)
 {
 	response *res = malloc(sizeof(response));
-	res->server_log = malloc(100);
-	res->server_response = malloc(100);
+	res->server_log = malloc(1000);
+	res->server_response = malloc(1000);
 
 	char **content_ptr = lru_cache_get(s->cache, &doc_name);
 	bool cache_hit;
@@ -38,7 +38,7 @@ static response *server_edit_document(server *s, char *doc_name,
 		free(content);
 	}
 	hm_set(s->local_db, doc_name, 1 + strlen(doc_name), doc_content,
-				 1 + strlen(doc_content));
+				 1 + strlen(doc_content), 0);
 
 	if (cache_hit || content) {
 		sprintf(res->server_response, "Document %s has been overridden", doc_name);
@@ -72,8 +72,8 @@ static response *server_get_document(server *s, char *doc_name)
 {
 	// printf("[d] Am de gasit %s\n", doc_name);
 	response *res = malloc(sizeof(response));
-	res->server_log = malloc(100);
-	res->server_response = malloc(100);
+	res->server_log = malloc(1000);
+	res->server_response = malloc(1000);
 
 	char **content_ptr = lru_cache_get(s->cache, &doc_name);
 	if (content_ptr) {
@@ -160,7 +160,6 @@ void solve_queue(server *s, bool free_only)
 
 response *server_handle_request(server *s, request *req)
 {
-	// printf("[d] Mi-a dat mi-a dat pachet\n");
 	if (req->type == EDIT_DOCUMENT) {
 		// on edit request, put task in queue and go next
 		request *new_req = malloc(sizeof(request));
