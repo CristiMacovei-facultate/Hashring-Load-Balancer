@@ -24,19 +24,26 @@ load_balancer *init_load_balancer(bool enable_vnodes)
 	return lb;
 }
 
+int compare_uints(unsigned int a, unsigned int b)
+{
+	if (a > b) {
+		return 1;
+	}
+	if (a < b) {
+		return -1;
+	}
+	return 0;
+}
+
 int cmp_servers(void *a, void *b)
 {
 	server *first = a;
 	server *second = b;
 
-	int hash_first = hash_uint(&first->id);
-	int hash_second = hash_uint(&second->id);
+	unsigned int hash_first = hash_uint(&first->id);
+	unsigned hash_second = hash_uint(&second->id);
 
-	if (hash_first != hash_second) {
-		return hash_first - hash_second;
-	}
-
-	return first->id - second->id;
+	return compare_uints(first->id, second->id);
 }
 
 int cmp_server_to_hash(void *s, void *h)
@@ -45,13 +52,7 @@ int cmp_server_to_hash(void *s, void *h)
 	unsigned int hash_server = hash_uint(&srv->id);
 	unsigned int hash = *(unsigned int *)h;
 
-	int result = 0;
-	if (hash_server > hash) {
-		result = 1;
-	}
-	else if (hash_server < hash) {
-		result = -1;
-	}
+	int result = compare_uints(hash_server, hash);
 
 	// printf("Compar %u (h) cu %u (s), iese %d\n", hash, hash_server, result);
 
@@ -84,9 +85,7 @@ response *loader_forward_request(load_balancer *main, request *req)
 	server *srv2 =
 			al_get_ordered(main->servers, &hash_document, cmp_server_to_hash);
 	// printf("Imi vine document cu hash-ul %u, pun pe server %d\n",
-	// hash_document,
-	//		 srv2->id);
-	// server *srv = al_get(main->servers, 0);
+	// hash_document, 			 srv2->id); server *srv = al_get(main->servers, 0);
 	response *res = server_handle_request(srv2, req);
 
 	return res;

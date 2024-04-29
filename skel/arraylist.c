@@ -80,7 +80,10 @@ void al_insert(arraylist_t *list, unsigned int index, void *data)
 		al_resize(list, 2 * list->capacity);
 	}
 
-	for (int i = list->size; i > (int)index; ++i) {
+	// printf("Trec de resize, cap = %d\n", list->capacity);
+
+	for (int i = list->size; i > (int)index; --i) {
+		// printf("Vreau sa scriu list.data[%d]\n", i);
 		list->data[i] = list->data[i - 1];
 	}
 	list->data[index] = new_data;
@@ -96,16 +99,16 @@ void al_insert_ordered(arraylist_t *list, void *data,
 	}
 
 	int left = 0, right = list->size - 1, ans = list->size;
-	while (left < right) {
+	while (left <= right) {
 		int mid = (left + right) / 2;
 		void *mid_data = al_get(list, mid);
 
 		if (compare(data, mid_data) < 0) {
 			ans = mid;
-			right = mid - 1;
+			left = mid + 1;
 		}
 		else {
-			left = mid + 1;
+			right = mid - 1;
 		}
 	}
 
