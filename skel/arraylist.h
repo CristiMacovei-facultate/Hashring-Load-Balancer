@@ -14,9 +14,15 @@ arraylist_t *al_init(unsigned int data_size, void(destructor)(void *));
 
 void *al_get(arraylist_t *list, unsigned int index);
 
+void *al_get_ordered(arraylist_t *list, void *target,
+										 int (*compare)(void *element, void *target));
+
 void al_erase(arraylist_t *list, unsigned int index);
 
 void al_insert(arraylist_t *list, unsigned int index, void *data);
+
+void al_insert_ordered(arraylist_t *list, void *data,
+											 int (*compare)(void *data1, void *data2));
 
 void al_free(arraylist_t *list);
 
