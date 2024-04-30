@@ -25,8 +25,8 @@ void al_erase(arraylist_t *list, unsigned int index);
 
 void al_insert(arraylist_t *list, unsigned int index, void *data);
 
-void al_insert_ordered(arraylist_t *list, void *data,
-											 int (*compare)(void *data1, void *data2));
+int al_insert_ordered(arraylist_t *list, void *data,
+											int (*compare)(void *data1, void *data2));
 
 void al_free(arraylist_t *list);
 

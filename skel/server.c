@@ -202,9 +202,12 @@ void free_server(server **s)
 	*s = NULL;
 }
 
-void transfer_files(server *src, server *dest)
+void transfer_files(server *src, server *dest, bool force_move,
+										unsigned int target_hash)
 {
-	solve_queue(src, true);
+	solve_queue(src, false);
+
+	unsigned int dest_hash = hash_uint(&dest->id);
 
 	// mut din local db in local db
 	for (int i = 0; i < src->local_db->hmax; ++i) {
@@ -214,13 +217,27 @@ void transfer_files(server *src, server *dest)
 
 			char *name = (char *)info->key;
 			char *content = (char *)info->val;
-			printf("Mut '%s'\n", name);
 
-			hm_set(dest->local_db, name, 1 + strlen(name), content,
-						 1 + strlen(content), 0);
+			unsigned int name_hash = hash_string(name);
 
-			hm_remove(src->local_db, name);
+			bool should_move = false;
+			if (target_hash < name_hash && name_hash <= dest_hash) {
+				should_move = true;
+			}
 
+			if (force_move || should_move) {
+				// printf("Mut '%s'\n", name);
+
+				hm_set(dest->local_db, name, 1 + strlen(name), content,
+							 1 + strlen(content), 0);
+			}
+			if (!force_move) {
+				// printf("Aici se intampla amuzanta\n");
+				map_info_t *removed = hm_remove(src->local_db, name);
+				free(name);
+				free(content);
+				free(removed);
+			}
 			node = next;
 		}
 	}

@@ -45,8 +45,8 @@ int cmp_servers(void *a, void *b)
 
 	int result = compare_uints(hash_first, hash_second);
 
-	printf("Compar %u (id = %d) cu %u (id = %d) si iese %d\n", hash_first,
-				 first->id, hash_second, second->id, result);
+	// printf("Compar %u (id = %d) cu %u (id = %d) si iese %d\n", hash_first,
+	// 			 first->id, hash_second, second->id, result);
 
 	return result;
 }
@@ -78,10 +78,24 @@ void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 	srv->id = server_id;
 
 	// al_insert(lb->servers, lb->servers->size, srv);
-	al_insert_ordered(lb->servers, srv, cmp_servers);
+	int dest_index = al_insert_ordered(lb->servers, srv, cmp_servers);
 	free(srv);
 
-	print_servers(lb->servers);
+	// print_servers(lb->servers);
+
+	int src_index = (dest_index + 1) % lb->servers->size;
+	server *src_server = al_get(lb->servers, src_index);
+	server *dest_server = al_get(lb->servers, dest_index);
+
+	int index_before_dest =
+			(lb->servers->size + dest_index - 1) % lb->servers->size;
+	server *before_dest_server = al_get(lb->servers, index_before_dest);
+	unsigned int bd_hash = hash_uint(&before_dest_server->id);
+
+	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
+	// 			 src_index, dest_index);
+
+	transfer_files(src_server, dest_server, false, bd_hash);
 }
 
 void loader_remove_server(load_balancer *main, int server_id)
@@ -91,17 +105,17 @@ void loader_remove_server(load_balancer *main, int server_id)
 	int index = al_find_by(main->servers, &id_hash, &server_id,
 												 cmp_server_to_hash, cmp_server_to_id);
 
-	printf("Index de %d este %d\n", server_id, index);
+	// printf("Index de %d este %d\n", server_id, index);
 
 	int src = index;
 	int dest = (index + 1) % main->servers->size;
-	printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
-				 src, dest);
+	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
+	// 			 src, dest);
 
 	server *src_server = al_get(main->servers, src);
 	server *dest_server = al_get(main->servers, dest);
 
-	transfer_files(src_server, dest_server);
+	transfer_files(src_server, dest_server, true, 0);
 
 	al_erase(main->servers, src);
 	print_servers(main->servers);

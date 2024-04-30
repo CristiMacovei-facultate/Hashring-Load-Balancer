@@ -57,10 +57,10 @@ int al_find_by(arraylist_t *list, void *bs_key, void *target,
 							 int (*bs_compare)(void *element, void *target),
 							 int (*compare)(void *element, void *target))
 {
-	printf("intru aici\n");
+	// printf("intru aici\n");
 	int left = 0, right = list->size - 1, ans = 0;
 	while (left <= right) {
-		printf("left= %d, right = %d\n", left, right);
+		// printf("left= %d, right = %d\n", left, right);
 		int mid = (left + right) / 2;
 		void *mid_data = al_get(list, mid);
 
@@ -77,7 +77,7 @@ int al_find_by(arraylist_t *list, void *bs_key, void *target,
 		}
 	}
 
-	printf("gata asta\n");
+	// printf("gata asta\n");
 
 	for (int i = ans; i < list->size; ++i) {
 		void *element = al_get(list, i);
@@ -108,7 +108,8 @@ void al_insert(arraylist_t *list, unsigned int index, void *data)
 {
 	unsigned int hash = hash_uint(&((server *)data)->id);
 	int id = ((server *)data)->id;
-	printf("Bag server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id, index);
+	// printf("Bag server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id,
+	// index);
 	void *new_data = malloc(list->data_size);
 	memcpy(new_data, data, list->data_size);
 
@@ -126,17 +127,17 @@ void al_insert(arraylist_t *list, unsigned int index, void *data)
 	++(list->size);
 }
 
-void al_insert_ordered(arraylist_t *list, void *data,
-											 int (*compare)(void *data1, void *data2))
+int al_insert_ordered(arraylist_t *list, void *data,
+											int (*compare)(void *data1, void *data2))
 {
 	if (list->size == 0) {
 		al_insert(list, 0, data);
-		return;
+		return 0;
 	}
 
 	int left = 0, right = list->size - 1, ans = list->size;
 	while (left <= right) {
-		printf("Bs: l = %d, r = %d\n", left, right);
+		// printf("Bs: l = %d, r = %d\n", left, right);
 		int mid = (left + right) / 2;
 		void *mid_data = al_get(list, mid);
 
@@ -150,6 +151,7 @@ void al_insert_ordered(arraylist_t *list, void *data,
 	}
 
 	al_insert(list, ans, data);
+	return ans;
 }
 
 void al_free(arraylist_t *list)
