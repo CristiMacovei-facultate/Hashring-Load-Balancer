@@ -103,7 +103,10 @@ void loader_remove_server(load_balancer *main, int server_id)
 
 	transfer_files(src_server, dest_server);
 
-	exit(0);
+	al_erase(main->servers, src);
+	print_servers(main->servers);
+
+	free_server(&src_server);
 }
 
 response *loader_forward_request(load_balancer *main, request *req)

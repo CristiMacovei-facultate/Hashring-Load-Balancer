@@ -204,7 +204,7 @@ void free_server(server **s)
 
 void transfer_files(server *src, server *dest)
 {
-	solve_queue(src, false);
+	solve_queue(src, true);
 
 	// mut din local db in local db
 	for (int i = 0; i < src->local_db->hmax; ++i) {
@@ -212,18 +212,16 @@ void transfer_files(server *src, server *dest)
 			map_info_t *info = node->data;
 			ll_node_t *next = node->next;
 
-			printf("O sa mut documentul '%s'\n", (char *)info->key);
 			char *name = (char *)info->key;
 			char *content = (char *)info->val;
+			printf("Mut '%s'\n", name);
 
 			hm_set(dest->local_db, name, 1 + strlen(name), content,
 						 1 + strlen(content), 0);
 
-			printf("Aici plesneste\n");
-
 			hm_remove(src->local_db, name);
 
-			printf("Nah trec de asta, plescaie la urmatoru\n");
+			node = next;
 		}
 	}
 }

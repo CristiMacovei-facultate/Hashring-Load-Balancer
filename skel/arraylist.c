@@ -94,7 +94,7 @@ void al_erase(arraylist_t *list, unsigned int index)
 		index = list->size - 1;
 	}
 
-	for (int i = (int)list->size - 2; i >= (int)index; --i) {
+	for (int i = index; i < list->size - 1; ++i) {
 		list->data[i] = list->data[i + 1];
 	}
 
