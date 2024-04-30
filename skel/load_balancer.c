@@ -43,7 +43,12 @@ int cmp_servers(void *a, void *b)
 	unsigned int hash_first = hash_uint(&first->id);
 	unsigned hash_second = hash_uint(&second->id);
 
-	return compare_uints(first->id, second->id);
+	int result = compare_uints(hash_first, hash_second);
+
+	printf("Compar %u (id = %d) cu %u (id = %d) si iese %d\n", hash_first,
+				 first->id, hash_second, second->id, result);
+
+	return result;
 }
 
 int cmp_server_to_hash(void *s, void *h)
@@ -59,6 +64,14 @@ int cmp_server_to_hash(void *s, void *h)
 	return result;
 }
 
+int cmp_server_to_id(void *s, void *i)
+{
+	server *srv = s;
+	int id = *(int *)i;
+
+	return srv->id - id;
+}
+
 void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 {
 	server *srv = init_server(cache_size);
@@ -67,10 +80,30 @@ void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 	// al_insert(lb->servers, lb->servers->size, srv);
 	al_insert_ordered(lb->servers, srv, cmp_servers);
 	free(srv);
+
+	print_servers(lb->servers);
 }
 
 void loader_remove_server(load_balancer *main, int server_id)
-{ /* TODO */
+{
+	unsigned int id_hash = hash_uint(&server_id);
+
+	int index = al_find_by(main->servers, &id_hash, &server_id,
+												 cmp_server_to_hash, cmp_server_to_id);
+
+	printf("Index de %d este %d\n", server_id, index);
+
+	int src = index;
+	int dest = (index + 1) % main->servers->size;
+	printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
+				 src, dest);
+
+	server *src_server = al_get(main->servers, src);
+	server *dest_server = al_get(main->servers, dest);
+
+	transfer_files(src_server, dest_server);
+
+	exit(0);
 }
 
 response *loader_forward_request(load_balancer *main, request *req)
@@ -80,13 +113,10 @@ response *loader_forward_request(load_balancer *main, request *req)
 		return NULL;
 	}
 
-	// hardcoded for now
 	unsigned int hash_document = hash_string(req->doc_name);
-	server *srv2 =
+	server *srv =
 			al_get_ordered(main->servers, &hash_document, cmp_server_to_hash);
-	// printf("Imi vine document cu hash-ul %u, pun pe server %d\n",
-	// hash_document, 			 srv2->id); server *srv = al_get(main->servers, 0);
-	response *res = server_handle_request(srv2, req);
+	response *res = server_handle_request(srv, req);
 
 	return res;
 }

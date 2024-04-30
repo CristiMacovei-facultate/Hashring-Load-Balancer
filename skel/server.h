@@ -61,4 +61,6 @@ void free_server(server **s);
  */
 response *server_handle_request(server *s, request *req);
 
+void transfer_files(server *src, server *dest);
+
 #endif /* SERVER_H */

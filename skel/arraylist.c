@@ -53,6 +53,41 @@ void *al_get_ordered(arraylist_t *list, void *target,
 	return al_get(list, ans);
 }
 
+int al_find_by(arraylist_t *list, void *bs_key, void *target,
+							 int (*bs_compare)(void *element, void *target),
+							 int (*compare)(void *element, void *target))
+{
+	printf("intru aici\n");
+	int left = 0, right = list->size - 1, ans = 0;
+	while (left <= right) {
+		printf("left= %d, right = %d\n", left, right);
+		int mid = (left + right) / 2;
+		void *mid_data = al_get(list, mid);
+
+		int bsc_result = bs_compare(mid_data, bs_key);
+		if (bs_compare < 0) {
+			right = -1 + mid;
+		}
+		else if (bs_compare > 0) {
+			left = 1 + mid;
+		}
+		else {
+			ans = mid;
+			left = 1 + mid;
+		}
+	}
+
+	printf("gata asta\n");
+
+	for (int i = ans; i < list->size; ++i) {
+		void *element = al_get(list, i);
+		if (compare(element, target) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void al_erase(arraylist_t *list, unsigned int index)
 {
 	if (index >= list->size) {
@@ -72,7 +107,8 @@ void al_erase(arraylist_t *list, unsigned int index)
 void al_insert(arraylist_t *list, unsigned int index, void *data)
 {
 	unsigned int hash = hash_uint(&((server *)data)->id);
-	// printf("Bag server cu hash-ul %u pe pozitia %d\n", hash, index);
+	int id = ((server *)data)->id;
+	printf("Bag server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id, index);
 	void *new_data = malloc(list->data_size);
 	memcpy(new_data, data, list->data_size);
 
@@ -100,15 +136,16 @@ void al_insert_ordered(arraylist_t *list, void *data,
 
 	int left = 0, right = list->size - 1, ans = list->size;
 	while (left <= right) {
+		printf("Bs: l = %d, r = %d\n", left, right);
 		int mid = (left + right) / 2;
 		void *mid_data = al_get(list, mid);
 
-		if (compare(data, mid_data) < 0) {
+		if (compare(mid_data, data) > 0) {
 			ans = mid;
-			left = mid + 1;
+			right = mid - 1;
 		}
 		else {
-			right = mid - 1;
+			left = mid + 1;
 		}
 	}
 
@@ -123,4 +160,15 @@ void al_free(arraylist_t *list)
 	}
 	free(list->data);
 	free(list);
+}
+
+void print_servers(arraylist_t *list)
+{
+	printf("\n\nDau debug la lista\n");
+	for (int i = 0; i < list->size; ++i) {
+		server *srv = ((server *)al_get(list, i));
+		printf("list[%d] are id = %d (hash = %u)\n", i, srv->id,
+					 hash_uint(&srv->id));
+	}
+	printf("\n\n");
 }
