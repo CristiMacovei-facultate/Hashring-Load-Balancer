@@ -205,8 +205,12 @@ void free_server(server **s)
 void transfer_files(server *src, server *dest, bool force_move,
 										unsigned int target_hash)
 {
+	// printf("Am de adaugat fisiere din serverul %d in serverul %d fm = %d\n",
+	// 			 src->id, dest->id, force_move);
+
 	solve_queue(src, false);
 
+	unsigned int src_hash = hash_uint(&src->id);
 	unsigned int dest_hash = hash_uint(&dest->id);
 
 	// mut din local db in local db
@@ -221,7 +225,15 @@ void transfer_files(server *src, server *dest, bool force_move,
 			unsigned int name_hash = hash_string(name);
 
 			bool should_move = false;
-			if (target_hash < name_hash && name_hash <= dest_hash) {
+			// printf("Consider %s\n", name);
+			// printf("Target hash: %u, name hash: %u, dest hash: %u\n", target_hash,
+			//  name_hash, dest_hash);
+			if (name_hash > src_hash) {
+				unsigned int aux = name_hash;
+				name_hash = src_hash;
+				src_hash = aux;
+			}
+			if (name_hash < dest_hash && dest_hash <= src_hash) {
 				should_move = true;
 			}
 

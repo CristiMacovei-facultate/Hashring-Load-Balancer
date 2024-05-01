@@ -2,6 +2,8 @@
 #include <string.h>
 
 #include "arraylist.h"
+#include "hashmap.h"
+#include "linked_list.h"
 #include "server.h"
 #include "utils.h"
 
@@ -171,6 +173,18 @@ void print_servers(arraylist_t *list)
 		server *srv = ((server *)al_get(list, i));
 		printf("list[%d] are id = %d (hash = %u)\n", i, srv->id,
 					 hash_uint(&srv->id));
+
+		printf("Fisiere:\n");
+		for (int j = 0; j < srv->local_db->hmax; ++j) {
+			ll_t *list = srv->local_db->buckets[j];
+			for (ll_node_t *node = list->head; node; node = node->next) {
+				map_info_t *info = node->data;
+				char *name = info->key;
+				char *cont = info->val;
+
+				printf("'%s': '%s'\n", name, cont);
+			}
+		}
 	}
 	printf("\n\n");
 }
