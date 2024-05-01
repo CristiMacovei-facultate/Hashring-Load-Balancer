@@ -226,19 +226,17 @@ void transfer_files(server *src, server *dest, bool force_move,
 
 			bool should_move = false;
 			// printf("Consider %s\n", name);
-			// printf("Target hash: %u, name hash: %u, dest hash: %u\n", target_hash,
-			//  name_hash, dest_hash);
-			if (name_hash > src_hash) {
-				unsigned int aux = name_hash;
-				name_hash = src_hash;
-				src_hash = aux;
+			// printf("src hash: %u, name hash: %u, dest hash: %u\n", src_hash,
+			// 			 name_hash, dest_hash);
+			if (name_hash > src_hash && dest_hash < src_hash) {
+				should_move = true;
 			}
 			if (name_hash < dest_hash && dest_hash <= src_hash) {
 				should_move = true;
 			}
 
 			if (force_move || should_move) {
-				// printf("Mut '%s'\n", name);
+				// printf("Mut '%s' = '%s'\n", name, content);
 
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
 							 1 + strlen(content), 0);
