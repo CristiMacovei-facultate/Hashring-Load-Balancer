@@ -34,9 +34,6 @@ static response *server_edit_document(server *s, char *doc_name,
 	}
 
 	void *content = hm_get(s->local_db, doc_name);
-	if (content) {
-		free(content);
-	}
 	hm_set(s->local_db, doc_name, 1 + strlen(doc_name), doc_content,
 				 1 + strlen(doc_content), 0);
 
@@ -117,6 +114,9 @@ void string_to_string_map_destructor(map_info_t *info)
 {
 	char *key = info->key;
 	char *val = info->val;
+
+	// fprintf(stderr, "I blew up %s\n", val);
+
 	free(key);
 	free(val);
 }
@@ -206,7 +206,7 @@ void transfer_files(server *src, server *dest, bool force_move,
 										unsigned int target_hash)
 {
 	// printf("Am de adaugat fisiere din serverul %d in serverul %d fm = %d\n",
-	// 			 src->id, dest->id, force_move);
+	//  src->id, dest->id, force_move);
 
 	solve_queue(src, false);
 
@@ -235,14 +235,15 @@ void transfer_files(server *src, server *dest, bool force_move,
 				should_move = true;
 			}
 
+			// printf("Name: %s, gets moved: %d\n", name, force_move || should_move);
 			if (force_move || should_move) {
-				// printf("Mut '%s' = '%s'\n", name, content);
-
+				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
+				//  content);
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
 							 1 + strlen(content), 0);
-			}
-			if (!force_move && should_move) {
-				// printf("Aici se intampla amuzanta\n");
+				// fprintf(stderr, "I added %s on server %d\n", content,
+				// dest->local_db);
+
 				map_info_t *removed = hm_remove(src->local_db, name);
 				free(removed);
 
@@ -252,6 +253,7 @@ void transfer_files(server *src, server *dest, bool force_move,
 				free(content);
 				free(name);
 			}
+
 			node = next;
 		}
 	}

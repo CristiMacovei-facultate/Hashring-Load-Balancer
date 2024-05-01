@@ -47,10 +47,14 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 
 	void *copy_data = malloc(data_size);
 	memcpy(copy_data, data, data_size);
-
+	// printf("I added %s\n", (char *)copy_data);
+	// if (data_size == 21) {
+	// 	fprintf(stderr, "I alloc %d on %p\n", data_size, copy_data);
+	// }
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
 		if (map->key_compare_func(info->key, key) == 0) {
+			free(info->val);
 			info->val = copy_data;
 			return;
 		}
