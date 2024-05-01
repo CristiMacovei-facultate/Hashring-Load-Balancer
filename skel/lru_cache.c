@@ -121,10 +121,6 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 			// 	print_dll(cache);
 			// 	fprintf(stderr, "\n");
 			// }
-			cache->dll->destructor(rm_data);
-
-			free(rm_data);
-			free(removed);
 		}
 
 		lru_dll_data *node_data = malloc(sizeof(lru_dll_data));
@@ -196,14 +192,23 @@ void *lru_cache_get(lru_cache *cache, void *key)
 void lru_cache_remove(lru_cache *cache, void *key)
 {
 	map_info_t *info = hm_remove(cache->map, key);
-	if (strcmp(*(char **)key, "other_outside.txt") == 0) {
-		fprintf(stderr, "Aici dau evict\n");
+	if (!info) {
+		// printf("Not in cache\n");
+		return;
 	}
+	// if (strcmp(*(char **)key, "other_outside.txt") == 0) {
+	// 	fprintf(stderr, "Aici dau evict\n");
+	// }
 
 	dll_node_t *node = *(dll_node_t **)info->val;
 
 	if (node) {
 		dll_remove_node(cache->dll, node);
+		lru_dll_data *data = node->data;
+
+		cache->dll->destructor(data);
+		free(data);
+		free(node);
 	}
 
 	cache->map->key_val_destructor(info);

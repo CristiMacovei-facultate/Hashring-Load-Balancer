@@ -243,12 +243,16 @@ void transfer_files(server *src, server *dest, bool force_move,
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
 							 1 + strlen(content), 0);
 			}
-			if (!force_move) {
+			if (!force_move && should_move) {
 				// printf("Aici se intampla amuzanta\n");
 				map_info_t *removed = hm_remove(src->local_db, name);
-				free(name);
-				free(content);
 				free(removed);
+
+				// printf("Trying to remove %s\n", name);
+				lru_cache_remove(src->cache, &name); // pray nigga
+
+				free(content);
+				free(name);
 			}
 			node = next;
 		}
