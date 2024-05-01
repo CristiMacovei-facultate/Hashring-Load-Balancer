@@ -228,7 +228,11 @@ void transfer_files(server *src, server *dest, bool force_move,
 			// printf("Consider %s\n", name);
 			// printf("src hash: %u, name hash: %u, dest hash: %u\n", src_hash,
 			// 			 name_hash, dest_hash);
-			if (name_hash > src_hash && dest_hash < src_hash) {
+
+			if (src_hash < name_hash && name_hash < dest_hash) {
+				should_move = true;
+			}
+			if (src_hash < name_hash && dest_hash < src_hash) {
 				should_move = true;
 			}
 			if (name_hash < dest_hash && dest_hash <= src_hash) {
