@@ -61,7 +61,6 @@ void free_server(server **s);
  */
 response *server_handle_request(server *s, request *req);
 
-void transfer_files(server *src, server *dest, bool force_move,
-										unsigned int target_hash);
+void transfer_files(server *src, server *dest, bool force_move);
 
 #endif /* SERVER_H */

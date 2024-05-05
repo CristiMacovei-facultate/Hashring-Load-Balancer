@@ -14,6 +14,7 @@ typedef struct load_balancer {
 	unsigned int (*hash_function_servers)(void *);
 	unsigned int (*hash_function_docs)(void *);
 
+	bool has_vnodes;
 	arraylist_t *servers;
 } load_balancer;
 

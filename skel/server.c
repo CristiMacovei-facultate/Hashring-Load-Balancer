@@ -193,18 +193,22 @@ response *server_handle_request(server *s, request *req)
 
 void free_server(server **s)
 {
-	solve_queue(*s, true);
+	if ((*s)->id < 100000) {
+		solve_queue(*s, true);
 
-	free_lru_cache(&((*s)->cache));
-	q_free((*s)->task_queue);
-	hm_free((*s)->local_db);
+		free_lru_cache(&((*s)->cache));
+		q_free((*s)->task_queue);
+		hm_free((*s)->local_db);
+	}
 	free(*s);
 	*s = NULL;
 }
 
-void transfer_files(server *src, server *dest, bool force_move,
-										unsigned int target_hash)
+void transfer_files(server *src, server *dest, bool force_move)
 {
+	if (src->id % 100000 == dest->id % 100000) {
+		return;
+	}
 	// printf("Am de adaugat fisiere din serverul %d in serverul %d fm = %d\n",
 	//  src->id, dest->id, force_move);
 
