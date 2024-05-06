@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024, <>
- */
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
 
 #include "utils.h"
 

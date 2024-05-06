@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
+
 #ifndef QUEUE_H_GUARD
 #define QUEUE_H_GUARD 0x69
 

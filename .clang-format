@@ -2,7 +2,7 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 TabWidth: 2
 UseTab: Always
-BreakBeforeBraces: Stroustrup
+BreakBeforeBraces: Linux
 AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 ColumnLimit: 80

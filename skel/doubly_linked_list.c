@@ -1,9 +1,12 @@
+/*
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "doubly_linked_list.h"
-#include "lru_cache.h"
 
 dll_t *dll_init(unsigned int data_size, void (*destructor)(void *))
 {
@@ -63,8 +66,7 @@ void dll_insert_nth(dll_t *list, unsigned int n, dll_node_t *new_node)
 
 	if (node->next) {
 		node->next->prev = new_node;
-	}
-	else {
+	} else {
 		list->tail = new_node;
 	}
 	node->next = new_node;
@@ -79,15 +81,13 @@ void dll_remove_node(dll_t *list, dll_node_t *node)
 
 	if (prev) {
 		prev->next = next;
-	}
-	else {
+	} else {
 		list->head = next;
 	}
 
 	if (next) {
 		next->prev = prev;
-	}
-	else {
+	} else {
 		list->tail = prev;
 	}
 

@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
+
 #ifndef ARRAYLIST_H_GUARD
 #define ARRAYLIST_H_GUARD 0x69
 

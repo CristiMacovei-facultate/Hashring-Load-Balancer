@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -46,8 +50,7 @@ void *al_get_ordered(arraylist_t *list, void *target,
 		if (compare(mid_data, target) >= 0) {
 			ans = mid;
 			right = mid - 1;
-		}
-		else {
+		} else {
 			left = 1 + mid;
 		}
 	}
@@ -69,11 +72,9 @@ int al_find_by(arraylist_t *list, void *bs_key, void *target,
 		int bsc_result = bs_compare(mid_data, bs_key);
 		if (bs_compare < 0) {
 			right = -1 + mid;
-		}
-		else if (bs_compare > 0) {
+		} else if (bs_compare > 0) {
 			left = 1 + mid;
-		}
-		else {
+		} else {
 			ans = mid;
 			left = 1 + mid;
 		}
@@ -108,8 +109,9 @@ void al_erase(arraylist_t *list, unsigned int index)
 
 void al_insert(arraylist_t *list, unsigned int index, void *data)
 {
-	unsigned int hash = hash_uint(&((server *)data)->id);
-	int id = ((server *)data)->id;
+	server *srv = (server *)data;
+	unsigned id = srv->id;
+	unsigned int hash = hash_uint(&id);
 	// printf("Bag server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id,
 	// index);
 	void *new_data = malloc(list->data_size);
@@ -146,8 +148,7 @@ int al_insert_ordered(arraylist_t *list, void *data,
 		if (compare(mid_data, data) > 0) {
 			ans = mid;
 			right = mid - 1;
-		}
-		else {
+		} else {
 			left = mid + 1;
 		}
 	}

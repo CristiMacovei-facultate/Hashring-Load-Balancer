@@ -9,7 +9,6 @@
 
 #include "constants.h"
 #include "load_balancer.h"
-#include "lru_cache.h"
 #include "utils.h"
 
 void read_quoted_string(char *buffer, int buffer_len, int *start, int *end)
@@ -22,8 +21,7 @@ void read_quoted_string(char *buffer, int buffer_len, int *start, int *end)
 
 		if (*start == -1) {
 			*start = i;
-		}
-		else {
+		} else {
 			*end = i;
 			break;
 		}
@@ -48,11 +46,9 @@ request_type read_request_arguments(FILE *input_file, char *buffer,
 		*maybe_server_id = atoi(buffer + strlen(ADD_SERVER_REQUEST) + 1);
 		*maybe_cache_size =
 				atoi(strchr(buffer + strlen(ADD_SERVER_REQUEST) + 1, ' '));
-	}
-	else if (req_type == REMOVE_SERVER) {
+	} else if (req_type == REMOVE_SERVER) {
 		*maybe_server_id = atoi(buffer + strlen(REMOVE_SERVER_REQUEST) + 1);
-	}
-	else {
+	} else {
 		*maybe_doc_name = calloc(1, DOC_NAME_LENGTH + 1);
 		DIE(*maybe_doc_name == NULL, "calloc failed");
 
@@ -84,8 +80,7 @@ request_type read_request_arguments(FILE *input_file, char *buffer,
 				memcpy(*maybe_doc_content + strlen(*maybe_doc_content), buffer,
 							 word_end == -1 ? strlen(buffer) : (unsigned)word_end);
 			}
-		}
-		else {
+		} else {
 			*maybe_doc_content = NULL;
 		}
 	}
@@ -108,11 +103,9 @@ void apply_requests(FILE *input_file, char *buffer, int requests_num,
 		if (req_type == ADD_SERVER) {
 			DIE(cache_size < 0, "cache size must be positive");
 			loader_add_server(main, server_id, (unsigned int)cache_size);
-		}
-		else if (req_type == REMOVE_SERVER) {
+		} else if (req_type == REMOVE_SERVER) {
 			loader_remove_server(main, server_id);
-		}
-		else {
+		} else {
 			request server_request = {
 					.type = req_type,
 					.doc_name = doc_name,

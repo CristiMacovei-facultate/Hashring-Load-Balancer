@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024, <>
- */
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
 
 #include "server.h"
 #include "constants.h"
@@ -27,8 +27,7 @@ static response *server_edit_document(server *s, char *doc_name,
 	bool cache_hit;
 	if (!content_ptr) {
 		cache_hit = false;
-	}
-	else {
+	} else {
 		cache_hit = true;
 		sprintf(res->server_log, "Cache HIT for %s", doc_name);
 	}
@@ -39,8 +38,7 @@ static response *server_edit_document(server *s, char *doc_name,
 
 	if (cache_hit || content) {
 		sprintf(res->server_response, "Document %s has been overridden", doc_name);
-	}
-	else {
+	} else {
 		sprintf(res->server_response, "Document %s has been created", doc_name);
 	}
 
@@ -56,8 +54,7 @@ static response *server_edit_document(server *s, char *doc_name,
 							"Cache MISS for %s - cache entry for %s has been evicted",
 							doc_name, (char *)evicted_key);
 			free(evicted_key);
-		}
-		else {
+		} else {
 			sprintf(res->server_log, "Cache MISS for %s", doc_name);
 		}
 	}
@@ -97,12 +94,10 @@ static response *server_get_document(server *s, char *doc_name)
 							doc_name, (char *)evicted_key);
 
 			free(evicted_key);
-		}
-		else {
+		} else {
 			sprintf(res->server_log, "Cache MISS for %s", doc_name);
 		}
-	}
-	else {
+	} else {
 		// res->server_response = strcat("Document", doc_name);
 		sprintf(res->server_response, "(null)");
 		sprintf(res->server_log, "Document %s doesn't exist", doc_name);
@@ -256,7 +251,7 @@ void transfer_files(server *src, server *dest, bool force_move)
 				free(removed);
 
 				// printf("Trying to remove %s\n", name);
-				lru_cache_remove(src->cache, &name); // pray nigga
+				lru_cache_remove(src->cache, &name);
 
 				free(content);
 				free(name);
@@ -343,7 +338,7 @@ void transfer_files_multiple(server *src, server **dests)
 			free(removed);
 
 			// printf("Trying to remove %s\n", name);
-			lru_cache_remove(src->cache, &name); // pray nigga
+			lru_cache_remove(src->cache, &name);
 
 			free(content);
 			free(name);
@@ -449,7 +444,7 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 				free(removed);
 
 				// printf("Trying to remove %s\n", name);
-				lru_cache_remove(src->cache, &name); // pray nigga
+				lru_cache_remove(src->cache, &name);
 
 				free(content);
 				free(name);

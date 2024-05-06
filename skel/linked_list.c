@@ -1,8 +1,11 @@
+/*
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "hashmap.h"
 #include "linked_list.h"
 
 ll_t *ll_init(unsigned int data_size)

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024, <>
- */
+Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
+*/
 
 #include "load_balancer.h"
 #include "arraylist.h"
@@ -79,8 +79,7 @@ server *internal_loader_add_server(load_balancer *lb, int server_id,
 	server *srv = NULL;
 	if (!vnode_ref) {
 		srv = init_server(cache_size);
-	}
-	else {
+	} else {
 		srv = malloc(sizeof(server));
 		srv->cache = vnode_ref->cache;
 		srv->local_db = vnode_ref->local_db;
@@ -116,8 +115,7 @@ server *internal_loader_add_server_with_vnodes(load_balancer *lb, int server_id,
 	server *srv = NULL;
 	if (!vnode_ref) {
 		srv = init_server(cache_size);
-	}
-	else {
+	} else {
 		srv = malloc(sizeof(server));
 		srv->cache = vnode_ref->cache;
 		srv->local_db = vnode_ref->local_db;
@@ -168,8 +166,7 @@ void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 																					 s);
 		internal_loader_add_server_with_vnodes(lb, server_id + 200000, cache_size,
 																					 s);
-	}
-	else {
+	} else {
 		internal_loader_add_server(lb, server_id, cache_size, NULL);
 	}
 	// print_servers(lb->servers);
@@ -243,8 +240,7 @@ void internal_loader_remove_server_with_vnodes(load_balancer *main,
 
 		if (i == 0) {
 			free_server(&replica);
-		}
-		else {
+		} else {
 			free(replica);
 		}
 	}
@@ -261,8 +257,7 @@ void loader_remove_server(load_balancer *main, int server_id)
 	if (main->has_vnodes) {
 		// print_servers(main->servers);
 		internal_loader_remove_server_with_vnodes(main, server_id);
-	}
-	else {
+	} else {
 		internal_loader_remove_server(main, server_id);
 	}
 	// print_servers(main->servers);
