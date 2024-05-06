@@ -109,13 +109,68 @@ server *internal_loader_add_server(load_balancer *lb, int server_id,
 	return dest_server;
 }
 
+server *internal_loader_add_server_with_vnodes(load_balancer *lb, int server_id,
+																							 int cache_size,
+																							 server *vnode_ref)
+{
+	server *srv = NULL;
+	if (!vnode_ref) {
+		srv = init_server(cache_size);
+	}
+	else {
+		srv = malloc(sizeof(server));
+		srv->cache = vnode_ref->cache;
+		srv->local_db = vnode_ref->local_db;
+		srv->task_queue = vnode_ref->task_queue;
+	}
+	srv->id = server_id;
+
+	// al_insert(lb->servers, lb->servers->size, srv);
+	int dest_index = al_insert_ordered(lb->servers, srv, cmp_servers);
+	free(srv);
+
+	// print_servers(lb->servers);
+	server *dest_server = al_get(lb->servers, dest_index);
+
+	int src_index = (dest_index + 1) % lb->servers->size;
+	server *src_server = al_get(lb->servers, src_index);
+
+	server *src_replicas[3];
+	unsigned src_id = src_server->id % 100000;
+	for (int i = 0; i < 3; ++i) {
+		unsigned id = src_id + i * 100000;
+		unsigned hash = hash_uint(&id);
+
+		int index = al_find_by(lb->servers, &hash, &id, cmp_server_to_hash,
+													 cmp_server_to_id);
+
+		src_replicas[i] = al_get(lb->servers, index);
+	}
+
+	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
+	// 			 src_index, dest_index);
+
+	transfer_files_multiple_srcs(src_replicas, src_server, dest_server);
+
+	// print_servers(lb->servers);
+
+	return dest_server;
+}
+
 void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 {
-	server *s = internal_loader_add_server(lb, server_id, cache_size, NULL);
+	// print_servers(lb->servers);
 
 	if (lb->has_vnodes) {
-		internal_loader_add_server(lb, server_id + 100000, cache_size, s);
-		internal_loader_add_server(lb, server_id + 200000, cache_size, s);
+		server *s =
+				internal_loader_add_server_with_vnodes(lb, server_id, cache_size, NULL);
+		internal_loader_add_server_with_vnodes(lb, server_id + 100000, cache_size,
+																					 s);
+		internal_loader_add_server_with_vnodes(lb, server_id + 200000, cache_size,
+																					 s);
+	}
+	else {
+		internal_loader_add_server(lb, server_id, cache_size, NULL);
 	}
 	// print_servers(lb->servers);
 }
@@ -130,26 +185,14 @@ void internal_loader_remove_server(load_balancer *main, int server_id)
 	// printf("Index de %d este %d\n", server_id, index);
 
 	int src = index;
-
+	int dest = (index + 1) % main->servers->size;
 	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
 	// 			 src, dest);
 
 	server *src_server = al_get(main->servers, src);
+	server *dest_server = al_get(main->servers, dest);
 
-	if (src_server->id < 100000) {
-		// printf("Bubui %d\n", src_server->id);
-		int dest = (index + 1) % main->servers->size;
-		server *dest_server = al_get(main->servers, dest);
-
-		while (dest != src && dest_server->id % 100000 == src_server->id % 100000) {
-			dest = (1 + dest) % main->servers->size;
-			dest_server = al_get(main->servers, dest);
-		}
-		// printf("Am gasit sa fac transfer cu %d\n", dest_server->id);
-		// print_servers(main->servers);
-
-		transfer_files(src_server, dest_server, true);
-	}
+	transfer_files(src_server, dest_server, true);
 
 	al_erase(main->servers, src);
 	// print_servers(main->servers);
@@ -157,15 +200,70 @@ void internal_loader_remove_server(load_balancer *main, int server_id)
 	free_server(&src_server);
 }
 
+void internal_loader_remove_server_with_vnodes(load_balancer *main,
+																							 int server_id)
+{
+	server *dests[3];
+
+	unsigned int id_hash = hash_uint(&server_id);
+	int index = al_find_by(main->servers, &id_hash, &server_id,
+												 cmp_server_to_hash, cmp_server_to_id);
+	int src = index;
+	server *src_server = al_get(main->servers, src);
+
+	server *src_replicas[3];
+
+	server_id %= 100000;
+	for (int i = 0; i < 3; ++i) {
+		int new_id = server_id + 100000 * i;
+		id_hash = hash_uint(&new_id);
+
+		index = al_find_by(main->servers, &id_hash, &new_id, cmp_server_to_hash,
+											 cmp_server_to_id);
+		src_replicas[i] = al_get(main->servers, index);
+
+		int dest = (index + 1) % main->servers->size;
+		server *dest_server = al_get(main->servers, dest);
+
+		dests[i] = dest_server;
+	}
+
+	transfer_files_multiple(src_server, dests);
+
+	// free all replicas
+	for (int i = 0; i < 3; ++i) {
+		unsigned id = server_id + 100000 * i;
+		id_hash = hash_uint(&id);
+
+		index = al_find_by(main->servers, &id_hash, &id, cmp_server_to_hash,
+											 cmp_server_to_id);
+
+		server *replica = al_get(main->servers, index);
+		al_erase(main->servers, index);
+
+		if (i == 0) {
+			free_server(&replica);
+		}
+		else {
+			free(replica);
+		}
+	}
+
+	// free_server(&srcs[0]);
+	// free(srcs[1]);
+	// free(srcs[2]);
+}
+
 void loader_remove_server(load_balancer *main, int server_id)
 {
 	// print_servers(main->servers);
 
-	internal_loader_remove_server(main, server_id);
-
 	if (main->has_vnodes) {
-		internal_loader_remove_server(main, server_id + 100000);
-		internal_loader_remove_server(main, server_id + 200000);
+		// print_servers(main->servers);
+		internal_loader_remove_server_with_vnodes(main, server_id);
+	}
+	else {
+		internal_loader_remove_server(main, server_id);
 	}
 	// print_servers(main->servers);
 }

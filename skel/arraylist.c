@@ -182,7 +182,7 @@ void print_servers(arraylist_t *list)
 				char *name = info->key;
 				char *cont = info->val;
 
-				printf("'%s': '%s'\n", name, cont);
+				printf("'%s': '%s' (hash = %u)\n", name, cont, hash_string(name));
 			}
 		}
 	}

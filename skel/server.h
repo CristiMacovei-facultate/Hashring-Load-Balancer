@@ -16,7 +16,7 @@
 #define MAX_RESPONSE_LENGTH 4096
 
 typedef struct server {
-	int id;
+	unsigned int id;
 
 	hashmap_t *local_db;
 	lru_cache *cache;
@@ -62,5 +62,9 @@ void free_server(server **s);
 response *server_handle_request(server *s, request *req);
 
 void transfer_files(server *src, server *dest, bool force_move);
+
+void transfer_files_multiple(server *src, server **dests);
+
+void transfer_files_multiple_srcs(server **replicas, server *src, server *dest);
 
 #endif /* SERVER_H */

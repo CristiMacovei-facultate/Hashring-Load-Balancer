@@ -246,7 +246,200 @@ void transfer_files(server *src, server *dest, bool force_move)
 			// printf("Name: %s, gets moved: %d\n", name, force_move || should_move);
 			if (force_move || should_move) {
 				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
-				//  content);
+				// 			 content);
+				hm_set(dest->local_db, name, 1 + strlen(name), content,
+							 1 + strlen(content), 0);
+				// fprintf(stderr, "I added %s on server %d\n", content,
+				// dest->local_db);
+
+				map_info_t *removed = hm_remove(src->local_db, name);
+				free(removed);
+
+				// printf("Trying to remove %s\n", name);
+				lru_cache_remove(src->cache, &name); // pray nigga
+
+				free(content);
+				free(name);
+			}
+
+			node = next;
+		}
+	}
+}
+
+server *pick_dest(unsigned name_hash, server **dests, server *src,
+									unsigned *dest_hashes)
+{
+	unsigned best_hash;
+	server *ans = NULL;
+	for (int i = 0; i < 3; ++i) {
+		// printf("Dest id: %d, src id %d\n", dests[i]->id, src->id);
+		if (dests[i]->id % 100000 == src->id % 100000) {
+			continue;
+		}
+		if (ans == NULL) {
+			ans = dests[i];
+			best_hash = dest_hashes[i];
+			continue;
+		}
+
+		if (name_hash < dest_hashes[i] && dest_hashes[i] <= best_hash) {
+			ans = dests[i];
+			best_hash = dest_hashes[i];
+			continue;
+		}
+
+		if (name_hash < dest_hashes[i] && best_hash < name_hash) {
+			ans = dests[i];
+			best_hash = dest_hashes[i];
+			continue;
+		}
+
+		if (name_hash > best_hash && dest_hashes[i] < best_hash) {
+			ans = dests[i];
+			best_hash = dest_hashes[i];
+			continue;
+		}
+	}
+
+	if (!ans) {
+		printf("Am dat-o in gard\n");
+		exit(-1);
+	}
+	return ans;
+}
+
+void transfer_files_multiple(server *src, server **dests)
+{
+	solve_queue(src, false);
+
+	unsigned int dest_hashes[3];
+	for (int i = 0; i < 3; ++i) {
+		dest_hashes[i] = hash_uint(&dests[i]->id);
+	}
+
+	for (int i = 0; i < src->local_db->hmax; ++i) {
+		for (ll_node_t *node = src->local_db->buckets[i]->head; node;) {
+			map_info_t *info = node->data;
+			ll_node_t *next = node->next;
+
+			char *name = (char *)info->key;
+			char *content = (char *)info->val;
+
+			unsigned int name_hash = hash_string(name);
+
+			// printf("For file = '%s' (hash = %u)\n", name, name_hash);
+
+			server *dest = pick_dest(name_hash, dests, src, dest_hashes);
+			// printf("Picked dest = %d\n", dest->id);
+
+			hm_set(dest->local_db, name, 1 + strlen(name), content,
+						 1 + strlen(content), 0);
+
+			// fprintf(stderr, "I added %s on server %d\n", content,
+			// dest->local_db);
+
+			map_info_t *removed = hm_remove(src->local_db, name);
+			free(removed);
+
+			// printf("Trying to remove %s\n", name);
+			lru_cache_remove(src->cache, &name); // pray nigga
+
+			free(content);
+			free(name);
+
+			node = next;
+		}
+	}
+}
+
+server *pick_src(unsigned name_hash, server **replicas,
+								 unsigned *replica_hashes)
+{
+	server *ans = NULL;
+	unsigned best_hash;
+
+	for (int i = 0; i < 3; ++i) {
+		if (!ans) {
+			ans = replicas[i];
+			best_hash = replica_hashes[i];
+			continue;
+		}
+
+		if (name_hash < replica_hashes[i] && replica_hashes[i] < best_hash) {
+			ans = replicas[i];
+			best_hash = replica_hashes[i];
+		}
+
+		if (name_hash < replica_hashes[i] && best_hash < name_hash) {
+			ans = replicas[i];
+			best_hash = replica_hashes[i];
+			continue;
+		}
+
+		if (name_hash > best_hash && replica_hashes[i] < best_hash) {
+			ans = replicas[i];
+			best_hash = replica_hashes[i];
+			continue;
+		}
+	}
+
+	return ans;
+}
+
+void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
+{
+	if (src->id % 100000 == dest->id % 100000) {
+		return;
+	}
+	// printf("Am de adaugat fisiere din serverul %d in serverul %d fm = %d\n",
+	//  src->id, dest->id, force_move);
+
+	solve_queue(src, false);
+
+	unsigned int src_hash = hash_uint(&src->id);
+	unsigned int dest_hash = hash_uint(&dest->id);
+
+	unsigned int replica_hashes[3];
+	for (int i = 0; i < 3; ++i) {
+		replica_hashes[i] = hash_uint(replicas[i]);
+	}
+
+	// mut din local db in local db
+	for (int i = 0; i < src->local_db->hmax; ++i) {
+		for (ll_node_t *node = src->local_db->buckets[i]->head; node;) {
+			map_info_t *info = node->data;
+			ll_node_t *next = node->next;
+
+			char *name = (char *)info->key;
+			char *content = (char *)info->val;
+
+			unsigned int name_hash = hash_string(name);
+
+			bool should_move = false;
+			// printf("Consider %s\n", name);
+			// printf("src hash: %u, name hash: %u, dest hash: %u\n", src_hash,
+			// 			 name_hash, dest_hash);
+
+			if (src_hash < name_hash && name_hash < dest_hash) {
+				should_move = true;
+			}
+			if (src_hash < name_hash && dest_hash < src_hash) {
+				should_move = true;
+			}
+			if (name_hash < dest_hash && dest_hash <= src_hash) {
+				should_move = true;
+			}
+
+			server *true_src = pick_src(name_hash, replicas, replica_hashes);
+			if (true_src->id != src->id) {
+				should_move = false;
+			}
+
+			// printf("Name: %s, gets moved: %d\n", name, force_move || should_move);
+			if (should_move) {
+				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
+				// 			 content);
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
 							 1 + strlen(content), 0);
 				// fprintf(stderr, "I added %s on server %d\n", content,
