@@ -45,10 +45,30 @@ unsigned int hash_uint(void *key);
  */
 unsigned int hash_string(void *key);
 
+/**
+ * @brief Function to compare two strings
+ *
+ * @param s1 - first string
+ * @param s2 - second string
+ * @return int - zero if they match, other value if not
+ */
 int compare_string(void *s1, void *s2);
 
+/**
+ * @brief same as hash_string, but takes a pointer to a string instead (char**)
+ *
+ * @param string_ptr
+ * @return unsigned int
+ */
 unsigned int hash_string_pointer(void *string_ptr);
 
+/**
+ * @brief Similar to compare_string, but takes string pointers instead
+ *
+ * @param s1 - first string pointer
+ * @param s2 - second string pointer
+ * @return int - same as compare_string
+ */
 int compare_string_pointers(void *s1, void *s2);
 
 char *get_request_type_str(request_type req_type);

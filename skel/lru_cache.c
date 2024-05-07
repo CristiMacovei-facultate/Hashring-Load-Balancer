@@ -109,19 +109,7 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 
 			*evicted_key = copy_ev_key;
 
-			// if (strcmp(copy_ev_key, "other_outside.txt") == 0) {
-			// 	fprintf(stderr, "Aici dau evict1 pentru %s\n", *(char **)key);
-			// 	print_map(cache);
-			// 	print_dll(cache);
-			// 	fprintf(stderr, "\n");
-			// }
 			lru_cache_remove(cache, rm_data->key);
-			// if (strcmp(copy_ev_key, "other_outside.txt") == 0) {
-			// 	fprintf(stderr, "Dupa evict:\n");
-			// 	print_map(cache);
-			// 	print_dll(cache);
-			// 	fprintf(stderr, "\n");
-			// }
 		}
 
 		lru_dll_data *node_data = malloc(sizeof(lru_dll_data));
@@ -129,29 +117,14 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 		memcpy(node_data->key, key, sizeof(char *));
 		node_data->val = malloc(sizeof(char *));
 		memcpy(node_data->val, value, sizeof(char *));
-		// if (strcmp(*(char **)key, "other_outside.txt") == 0) {
-		// 	fprintf(stderr, "Aici adaug\n");
-		// 	print_map(cache);
-		// 	print_dll(cache);
-		// 	fprintf(stderr, "\n");
-		// }
+
 		dll_node_t *node = dll_insert_nth_node(cache->dll, 0, node_data);
 		free(node_data);
 
 		size_t pointer = (size_t)node;
 
 		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
-		size_t *check_pointer = hm_get(cache->map, key);
-		if (!check_pointer) {
-			fprintf(stderr, "A trasnit\n");
-			exit(0);
-		}
-		// if (strcmp(*(char **)key, "other_outside.txt") == 0) {
-		// 	fprintf(stderr, "Dupa ad\n");
-		// 	print_map(cache);
-		// 	print_dll(cache);
-		// 	fprintf(stderr, "\n");
-		// }
+
 		return false;
 	}
 
@@ -194,12 +167,8 @@ void lru_cache_remove(lru_cache *cache, void *key)
 {
 	map_info_t *info = hm_remove(cache->map, key);
 	if (!info) {
-		// printf("Not in cache\n");
 		return;
 	}
-	// if (strcmp(*(char **)key, "other_outside.txt") == 0) {
-	// 	fprintf(stderr, "Aici dau evict\n");
-	// }
 
 	dll_node_t *node = *(dll_node_t **)info->val;
 

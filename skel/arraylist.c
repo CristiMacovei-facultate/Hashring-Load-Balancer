@@ -62,7 +62,6 @@ int al_find_by(arraylist_t *list, void *bs_key, void *target,
 							 int (*bs_compare)(void *element, void *target),
 							 int (*compare)(void *element, void *target))
 {
-	// printf("intru aici\n");
 	int left = 0, right = (int)list->size - 1, ans = 0;
 	while (left <= right) {
 		// printf("left= %d, right = %d\n", left, right);
@@ -107,10 +106,9 @@ void al_erase(arraylist_t *list, unsigned int index)
 
 void al_insert(arraylist_t *list, unsigned int index, void *data)
 {
-#ifdef DEBUG_MODE
-	server *srv = (server *)data;
-	printf("Pun server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id, index);
-#endif
+	// server *srv = (server *)data;
+	// printf("Pun server cu hash-ul %u (id = %d) pe pozitia %d\n", hash, id,
+	// index);
 
 	void *new_data = malloc(list->data_size);
 	memcpy(new_data, data, list->data_size);

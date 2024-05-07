@@ -33,10 +33,6 @@ ll_node_t *ll_get_nth_node(ll_t *list, unsigned int n)
 
 void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 {
-	// if (debug_info) {
-	// 	if ((size_t)(((map_info_t *)data)->key) == 0x4bdc480)
-	// 		fprintf(stderr, "incerci macar?\n");
-	// }
 	if (!list) {
 		return;
 	}
@@ -48,7 +44,6 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 	ll_node_t *new_node = malloc(sizeof(ll_node_t));
 	new_node->next = NULL;
 	new_node->data = malloc(list->data_size);
-	// printf("newnode.data = %p\n", new_node->data);
 	memcpy(new_node->data, data, list->data_size);
 
 	// if we insert on first pos
@@ -66,16 +61,7 @@ void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 
 	// if we insert on last pos
 	if (n == list->size) {
-		// if (debug_info == 1 && (size_t)(((map_info_t *)data)->key) == 0x4bdc480)
-		// { 	map_info_t *info = data; 	if (strcmp(*(char **)(info->key),
-		// "other_outside.txt") == 0) { 		fprintf(stderr, "Uite-l pe nemernic\n");
-		// 	}
-		// 	fprintf(stderr, "uite aici\n");
-		// }
 		if (list->tail) {
-			// if (debug_info == 1 && (size_t)(((map_info_t *)data)->key) ==
-			// 0x4bdc480) { 	fprintf(stderr, "Adresa tail: %p\n", list->tail);
-			// }
 			list->tail->next = new_node;
 		}
 		list->tail = new_node;
@@ -105,12 +91,6 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 	}
 
 	if (n == 0) {
-		// if ((size_t)list->tail == 0x4d90be0) {
-		// 	for (ll_node_t *node = list->head; node; node = node->next) {
-		// 		fprintf(stderr, "node = %p\n", node);
-		// 	}
-		// 	fprintf(stderr, "Aici se intampla amuzanta\n");
-		// }
 		--(list->size);
 		ll_node_t *ans = list->head;
 		list->head = list->head->next;
@@ -131,9 +111,6 @@ ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n)
 
 	if (n == list->size - 1) {
 		list->tail = node;
-		// if ((size_t)list->tail == 0x4d90be0) {
-		// 	fprintf(stderr, "MUIE tail pe %p, ans pe %p\n", list->tail, ans);
-		// }
 	}
 	--(list->size);
 	return ans;

@@ -46,9 +46,6 @@ int cmp_servers(void *a, void *b)
 
 	int result = compare_uints(hash_first, hash_second);
 
-	// printf("Compar %u (id = %d) cu %u (id = %d) si iese %d\n", hash_first,
-	// 			 first->id, hash_second, second->id, result);
-
 	return result;
 }
 
@@ -59,8 +56,6 @@ int cmp_server_to_hash(void *s, void *h)
 	unsigned int hash = *(unsigned int *)h;
 
 	int result = compare_uints(hash_server, hash);
-
-	// printf("Compar %u (h) cu %u (s), iese %d\n", hash, hash_server, result);
 
 	return result;
 }
@@ -87,23 +82,15 @@ server *internal_loader_add_server(load_balancer *lb, int server_id,
 	}
 	srv->id = server_id;
 
-	// al_insert(lb->servers, lb->servers->size, srv);
 	int dest_index = al_insert_ordered(lb->servers, srv, cmp_servers);
 	free(srv);
-
-	// print_servers(lb->servers);
 
 	int src_index = (dest_index + 1) % lb->servers->size;
 
 	server *src_server = al_get(lb->servers, src_index);
 	server *dest_server = al_get(lb->servers, dest_index);
 
-	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
-	// 			 src_index, dest_index);
-
 	transfer_files(src_server, dest_server, false);
-
-	// print_servers(lb->servers);
 
 	return dest_server;
 }
@@ -123,11 +110,9 @@ server *internal_loader_add_server_with_vnodes(load_balancer *lb, int server_id,
 	}
 	srv->id = server_id;
 
-	// al_insert(lb->servers, lb->servers->size, srv);
 	int dest_index = al_insert_ordered(lb->servers, srv, cmp_servers);
 	free(srv);
 
-	// print_servers(lb->servers);
 	server *dest_server = al_get(lb->servers, dest_index);
 
 	int src_index = (dest_index + 1) % lb->servers->size;
@@ -145,20 +130,13 @@ server *internal_loader_add_server_with_vnodes(load_balancer *lb, int server_id,
 		src_replicas[i] = al_get(lb->servers, index);
 	}
 
-	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
-	// 			 src_index, dest_index);
-
 	transfer_files_multiple_srcs(src_replicas, src_server, dest_server);
-
-	// print_servers(lb->servers);
 
 	return dest_server;
 }
 
 void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 {
-	// print_servers(lb->servers);
-
 	if (lb->has_vnodes) {
 		server *s =
 				internal_loader_add_server_with_vnodes(lb, server_id, cache_size, NULL);
@@ -169,7 +147,6 @@ void loader_add_server(load_balancer *lb, int server_id, int cache_size)
 	} else {
 		internal_loader_add_server(lb, server_id, cache_size, NULL);
 	}
-	// print_servers(lb->servers);
 }
 
 void internal_loader_remove_server(load_balancer *main, int server_id)
@@ -179,12 +156,8 @@ void internal_loader_remove_server(load_balancer *main, int server_id)
 	int index = al_find_by(main->servers, &id_hash, &server_id,
 												 cmp_server_to_hash, cmp_server_to_id);
 
-	// printf("Index de %d este %d\n", server_id, index);
-
 	int src = index;
 	int dest = (index + 1) % main->servers->size;
-	// printf("Vom muta toate fisierele care trebuie din src = %d in dest = %d\n",
-	// 			 src, dest);
 
 	server *src_server = al_get(main->servers, src);
 	server *dest_server = al_get(main->servers, dest);
@@ -192,7 +165,6 @@ void internal_loader_remove_server(load_balancer *main, int server_id)
 	transfer_files(src_server, dest_server, true);
 
 	al_erase(main->servers, src);
-	// print_servers(main->servers);
 
 	free_server(&src_server);
 }
@@ -221,7 +193,7 @@ void internal_loader_remove_server_with_vnodes(load_balancer *main,
 		dests[i] = dest_server;
 	}
 
-	transfer_files_multiple(src_server, dests);
+	transfer_files_multiple_dests(src_server, dests);
 
 	// free all replicas
 	for (int i = 0; i < 3; ++i) {
@@ -240,23 +212,15 @@ void internal_loader_remove_server_with_vnodes(load_balancer *main,
 			free(replica);
 		}
 	}
-
-	// free_server(&srcs[0]);
-	// free(srcs[1]);
-	// free(srcs[2]);
 }
 
 void loader_remove_server(load_balancer *main, int server_id)
 {
-	// print_servers(main->servers);
-
 	if (main->has_vnodes) {
-		// print_servers(main->servers);
 		internal_loader_remove_server_with_vnodes(main, server_id);
 	} else {
 		internal_loader_remove_server(main, server_id);
 	}
-	// print_servers(main->servers);
 }
 
 response *loader_forward_request(load_balancer *main, request *req)

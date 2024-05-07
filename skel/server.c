@@ -304,7 +304,7 @@ server *pick_dest(unsigned name_hash, server **dests, server *src,
 	return ans;
 }
 
-void transfer_files_multiple(server *src, server **dests)
+void transfer_files_multiple_dests(server *src, server **dests)
 {
 	solve_queue(src, false);
 
@@ -387,8 +387,6 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 	if (src->id % 100000 == dest->id % 100000) {
 		return;
 	}
-	// printf("Am de adaugat fisiere din serverul %d in serverul %d fm = %d\n",
-	//  src->id, dest->id, force_move);
 
 	solve_queue(src, false);
 
@@ -412,10 +410,6 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 			unsigned int name_hash = hash_string(name);
 
 			bool should_move = false;
-			// printf("Consider %s\n", name);
-			// printf("src hash: %u, name hash: %u, dest hash: %u\n", src_hash,
-			// 			 name_hash, dest_hash);
-
 			if (src_hash < name_hash && name_hash < dest_hash) {
 				should_move = true;
 			}
@@ -431,19 +425,13 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 				should_move = false;
 			}
 
-			// printf("Name: %s, gets moved: %d\n", name, force_move || should_move);
 			if (should_move) {
-				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
-				// 			 content);
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
 							 1 + strlen(content));
-				// fprintf(stderr, "I added %s on server %d\n", content,
-				// dest->local_db);
 
 				map_info_t *removed = hm_remove(src->local_db, name);
 				free(removed);
 
-				// printf("Trying to remove %s\n", name);
 				lru_cache_remove(src->cache, &name);
 
 				free(content);

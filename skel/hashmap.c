@@ -98,10 +98,6 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 	free(new_info);
 }
 
-/*
-function to remove a key-value pair from the hashmap
-returns the pair as a pointer of map_info_t, which should be freed by the caller
-*/
 void *hm_remove(hashmap_t *map, void *key)
 {
 	unsigned int hash = map->hash_function_key(key) % map->hmax;
@@ -110,14 +106,13 @@ void *hm_remove(hashmap_t *map, void *key)
 	int index = 0;
 	for (ll_node_t *node = list->head; node; node = node->next) {
 		map_info_t *info = node->data;
+
 		if (map->key_compare_func(info->key, key) == 0) {
 			--(map->size);
-			// fprintf(stderr, "Dau afara %s, index %d / %d\n", *(char **)key, index,
-			// 				list->size);
+
 			ll_node_t *removed = ll_remove_nth_node(map->buckets[hash], index);
-			// fprintf(stderr, "Pusca %p, tail pe %p\n", removed,
-			// 				map->buckets[hash]->tail);
 			free(removed);
+
 			return info;
 		}
 
