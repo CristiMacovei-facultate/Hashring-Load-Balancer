@@ -21,7 +21,7 @@ ll_t *ll_init(unsigned int data_size);
 
 ll_node_t *ll_get_nth_node(ll_t *list, unsigned int n);
 
-void ll_insert_nth(ll_t *list, unsigned int n, void *data, int debug_info);
+void ll_insert_nth(ll_t *list, unsigned int n, void *data);
 
 ll_node_t *ll_remove_nth_node(ll_t *list, unsigned int n);
 

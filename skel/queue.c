@@ -32,7 +32,7 @@ void q_push(queue_t *q, void *data)
 		exit(-1);
 	}
 
-	ll_insert_nth(q->data, q->data->size, data, 0);
+	ll_insert_nth(q->data, q->data->size, data);
 }
 
 void q_free(queue_t *q)

@@ -34,7 +34,7 @@ static response *server_edit_document(server *s, char *doc_name,
 
 	void *content = hm_get(s->local_db, doc_name);
 	hm_set(s->local_db, doc_name, 1 + strlen(doc_name), doc_content,
-				 1 + strlen(doc_content), 0);
+				 1 + strlen(doc_content));
 
 	if (cache_hit || content) {
 		sprintf(res->server_response, "Document %s has been overridden", doc_name);
@@ -120,7 +120,7 @@ server *init_server(unsigned int cache_size)
 {
 	server *srv = malloc(sizeof(server));
 	srv->cache = init_lru_cache(cache_size);
-	srv->local_db = hm_init(100, hash_string, compare_string,
+	srv->local_db = hm_init(HASHMAP_SIZE, hash_string, compare_string,
 													string_to_string_map_destructor);
 	srv->task_queue = q_init(sizeof(request));
 
@@ -213,7 +213,7 @@ void transfer_files(server *src, server *dest, bool force_move)
 	unsigned int dest_hash = hash_uint(&dest->id);
 
 	// mut din local db in local db
-	for (int i = 0; i < src->local_db->hmax; ++i) {
+	for (int i = 0; i < (int)src->local_db->hmax; ++i) {
 		for (ll_node_t *node = src->local_db->buckets[i]->head; node;) {
 			map_info_t *info = node->data;
 			ll_node_t *next = node->next;
@@ -243,7 +243,7 @@ void transfer_files(server *src, server *dest, bool force_move)
 				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
 				// 			 content);
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
-							 1 + strlen(content), 0);
+							 1 + strlen(content));
 				// fprintf(stderr, "I added %s on server %d\n", content,
 				// dest->local_db);
 
@@ -313,7 +313,7 @@ void transfer_files_multiple(server *src, server **dests)
 		dest_hashes[i] = hash_uint(&dests[i]->id);
 	}
 
-	for (int i = 0; i < src->local_db->hmax; ++i) {
+	for (int i = 0; i < (int)src->local_db->hmax; ++i) {
 		for (ll_node_t *node = src->local_db->buckets[i]->head; node;) {
 			map_info_t *info = node->data;
 			ll_node_t *next = node->next;
@@ -329,7 +329,7 @@ void transfer_files_multiple(server *src, server **dests)
 			// printf("Picked dest = %d\n", dest->id);
 
 			hm_set(dest->local_db, name, 1 + strlen(name), content,
-						 1 + strlen(content), 0);
+						 1 + strlen(content));
 
 			// fprintf(stderr, "I added %s on server %d\n", content,
 			// dest->local_db);
@@ -401,7 +401,7 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 	}
 
 	// mut din local db in local db
-	for (int i = 0; i < src->local_db->hmax; ++i) {
+	for (int i = 0; i < (int)src->local_db->hmax; ++i) {
 		for (ll_node_t *node = src->local_db->buckets[i]->head; node;) {
 			map_info_t *info = node->data;
 			ll_node_t *next = node->next;
@@ -436,7 +436,7 @@ void transfer_files_multiple_srcs(server **replicas, server *src, server *dest)
 				// printf("Mut din %d in %d: '%s' = '%s'\n", src->id, dest->id, name,
 				// 			 content);
 				hm_set(dest->local_db, name, 1 + strlen(name), content,
-							 1 + strlen(content), 0);
+							 1 + strlen(content));
 				// fprintf(stderr, "I added %s on server %d\n", content,
 				// dest->local_db);
 

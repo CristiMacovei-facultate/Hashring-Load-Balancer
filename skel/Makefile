@@ -15,9 +15,6 @@ DLL=doubly_linked_list
 
 .PHONY: build clean
 
-temp: *.c *.h
-	gcc -o tema2 *.c *.h $(CFLAGS)
-
 build: tema2
 
 tema2: main.o $(LOAD).o $(SERVER).o $(CACHE).o $(UTILS).o $(AL).o $(LL).o $(Q).o $(HM).o $(DLL).o

@@ -31,7 +31,7 @@ ll_node_t *ll_get_nth_node(ll_t *list, unsigned int n)
 	return node;
 }
 
-void ll_insert_nth(ll_t *list, unsigned int n, void *data, int debug_info)
+void ll_insert_nth(ll_t *list, unsigned int n, void *data)
 {
 	// if (debug_info) {
 	// 	if ((size_t)(((map_info_t *)data)->key) == 0x4bdc480)

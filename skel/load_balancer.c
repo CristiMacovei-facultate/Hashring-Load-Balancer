@@ -208,8 +208,6 @@ void internal_loader_remove_server_with_vnodes(load_balancer *main,
 	int src = index;
 	server *src_server = al_get(main->servers, src);
 
-	server *src_replicas[3];
-
 	server_id %= 100000;
 	for (int i = 0; i < 3; ++i) {
 		int new_id = server_id + 100000 * i;
@@ -217,8 +215,6 @@ void internal_loader_remove_server_with_vnodes(load_balancer *main,
 
 		index = al_find_by(main->servers, &id_hash, &new_id, cmp_server_to_hash,
 											 cmp_server_to_id);
-		src_replicas[i] = al_get(main->servers, index);
-
 		int dest = (index + 1) % main->servers->size;
 		server *dest_server = al_get(main->servers, dest);
 

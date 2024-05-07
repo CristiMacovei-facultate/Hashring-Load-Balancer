@@ -21,7 +21,7 @@ hashmap_t *hm_init(unsigned int hmax, unsigned int (*hash_function_key)(void *),
 	hm->key_val_destructor = key_val_destructor;
 
 	hm->buckets = malloc(hmax * sizeof(ll_t *));
-	for (int i = 0; i < hmax; ++i) {
+	for (int i = 0; i < (int)hmax; ++i) {
 		hm->buckets[i] = ll_init(sizeof(map_info_t));
 	}
 
@@ -44,7 +44,7 @@ void *hm_get(hashmap_t *map, void *key)
 }
 
 void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
-						unsigned int data_size, int debug_info)
+						unsigned int data_size)
 {
 	unsigned int hash = map->hash_function_key(key) % map->hmax;
 	ll_t *list = map->buckets[hash];
@@ -83,7 +83,7 @@ void hm_set(hashmap_t *map, void *key, unsigned int key_size, void *data,
 	// 						*(char **)(new_info->key));
 	// 	}
 	// }
-	ll_insert_nth(list, list->size, new_info, 1);
+	ll_insert_nth(list, list->size, new_info);
 	// if (debug_info) {
 	// 	if (strcmp(*(char **)key, "other_outside.txt") == 0) {
 	// 		for (ll_node_t *node = list->head; node; node = node->next) {
@@ -129,7 +129,7 @@ void *hm_remove(hashmap_t *map, void *key)
 
 void hm_free(hashmap_t *map)
 {
-	for (int i = 0; i < map->hmax; ++i) {
+	for (int i = 0; i < (int)map->hmax; ++i) {
 		for (ll_node_t *node = map->buckets[i]->head; node; node = node->next) {
 			map->key_val_destructor(node->data);
 		}

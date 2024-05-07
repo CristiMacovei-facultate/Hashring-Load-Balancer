@@ -9,6 +9,10 @@ Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
 #define DOC_NAME_LENGTH 64
 #define DOC_CONTENT_LENGTH 4096
 #define TASK_QUEUE_SIZE 1000
+
+// largest 4-digit prime number
+#define HASHMAP_SIZE 0x26f5
+
 #define REQUEST_LENGTH                                                         \
 	(REQUEST_TYPE_LENGTH + DOC_NAME_LENGTH + DOC_CONTENT_LENGTH)
 

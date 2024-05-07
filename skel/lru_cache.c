@@ -6,6 +6,7 @@ Copyright (c) 2024 Nicolae-Cristian MACOVEI nicolae.macovei1412@stud.acs.upb.ro
 #include <stdlib.h>
 #include <string.h>
 
+#include "constants.h"
 #include "doubly_linked_list.h"
 #include "hashmap.h"
 #include "linked_list.h"
@@ -46,7 +47,7 @@ lru_cache *init_lru_cache(unsigned int cache_capacity)
 
 	cache->dll = dll_init(sizeof(lru_dll_data), dll_data_destructor);
 	cache->map =
-			hm_init(cache_capacity, hash_string_pointer, compare_string_pointers,
+			hm_init(HASHMAP_SIZE, hash_string_pointer, compare_string_pointers,
 							string_ptr_to_long_map_destructor);
 
 	return cache;
@@ -79,7 +80,7 @@ void print_dll(lru_cache *cache)
 
 void print_map(lru_cache *cache)
 {
-	for (int i = 0; i < cache->map->hmax; ++i) {
+	for (int i = 0; i < (int)cache->map->hmax; ++i) {
 		for (ll_node_t *node = cache->map->buckets[i]->head; node;
 				 node = node->next) {
 			map_info_t *info = node->data;
@@ -103,7 +104,7 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 			dll_node_t *removed = cache->dll->tail;
 			lru_dll_data *rm_data = removed->data;
 
-			char *ev_key_string = *(char **)(((lru_dll_data *)removed->data)->key);
+			char *ev_key_string = *(char **)(rm_data->key);
 			char *copy_ev_key = strdup(ev_key_string);
 
 			*evicted_key = copy_ev_key;
@@ -114,7 +115,7 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 			// 	print_dll(cache);
 			// 	fprintf(stderr, "\n");
 			// }
-			lru_cache_remove(cache, ((lru_dll_data *)removed->data)->key);
+			lru_cache_remove(cache, rm_data->key);
 			// if (strcmp(copy_ev_key, "other_outside.txt") == 0) {
 			// 	fprintf(stderr, "Dupa evict:\n");
 			// 	print_map(cache);
@@ -139,7 +140,7 @@ bool lru_cache_put(lru_cache *cache, void *key, void *value, void **evicted_key)
 
 		size_t pointer = (size_t)node;
 
-		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t), 1);
+		hm_set(cache->map, key, sizeof(char *), &pointer, sizeof(size_t));
 		size_t *check_pointer = hm_get(cache->map, key);
 		if (!check_pointer) {
 			fprintf(stderr, "A trasnit\n");
